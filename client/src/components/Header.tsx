@@ -1,4 +1,3 @@
-import React from 'react';
 import { Scan, Search, Menu } from 'lucide-react';
 import logo from '../assets/webgrave-logo.png';
 

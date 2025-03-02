@@ -1,12 +1,11 @@
-import React from 'react';
-import { Scan, Heart } from 'lucide-react';
+import { Scan, User, UserPlus, LogIn } from 'lucide-react';
 
 interface Props {
-  onCreateClick: () => void;
-  onScanClick: () => void;
+  onSignupClick: () => void;
+  onLoginClick: () => void;
 }
 
-export function Hero({ onCreateClick, onScanClick }: Props) {
+export function Hero({ onSignupClick, onLoginClick }: Props) {
   return (
     <div className="relative bg-white overflow-hidden">
       <div className="absolute inset-0 bg-primary-50/50" />
@@ -23,18 +22,18 @@ export function Hero({ onCreateClick, onScanClick }: Props) {
               </p>
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start gap-4">
                 <button 
-                  onClick={onCreateClick}
+                  onClick={onLoginClick}
                   className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
                 >
-                  <Heart className="h-5 w-5" />
-                  Create Memorial
+                  <LogIn className="h-5 w-5" />
+                  Login
                 </button>
                 <button 
-                  onClick={onScanClick}
+                  onClick={onSignupClick}
                   className="btn-secondary w-full sm:w-auto flex items-center justify-center gap-2 mt-3 sm:mt-0"
                 >
-                  <Scan className="h-5 w-5" />
-                  Scan Code
+                  <UserPlus className="h-5 w-5" />
+                  Signup 
                 </button>
               </div>
             </div>
@@ -43,7 +42,7 @@ export function Hero({ onCreateClick, onScanClick }: Props) {
       </div>
       <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
         <div className="relative h-56 w-full sm:h-72 md:h-96 lg:w-full lg:h-full">
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent z-10 lg:block" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-50/50 via-white/0 to-transparent z-10 lg:block" />
           <img
             className="w-full h-full object-cover"
             src="https://images.unsplash.com/photo-1501446529957-6226bd447c46?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1932&q=80"

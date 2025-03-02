@@ -6,9 +6,11 @@ import { CreateMemorial } from './pages/CreateMemorial';
 import { ScanCode } from './pages/ScanCode';
 import { FindMemorial } from './pages/FindMemorial';
 import { AboutUs } from './components/AboutUs';
+import Signup from './components/Signup';
+import Login from './components/Login';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'create' | 'scan' | 'find' | 'about'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'create' | 'scan' | 'find' | 'about' | 'login' | 'signup'>('home');
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -20,8 +22,8 @@ function App() {
       />
       {currentPage === 'home' ? (
         <Hero 
-          onCreateClick={() => setCurrentPage('create')} 
-          onScanClick={() => setCurrentPage('scan')}
+          onSignupClick={() => setCurrentPage('signup')}
+          onLoginClick={() => setCurrentPage('login')} 
         />
       ) : currentPage === 'create' ? (
         <CreateMemorial />
@@ -29,9 +31,14 @@ function App() {
         <ScanCode />
       ) : currentPage === 'about' ? (
         <AboutUs />
+      ) : currentPage == 'login' ? (
+        <Login />
+      ) : currentPage === 'signup' ? (
+        <Signup />
       ) : (
         <FindMemorial />
-      )}
+      )
+      }
       <Footer />
     </div>
   );
