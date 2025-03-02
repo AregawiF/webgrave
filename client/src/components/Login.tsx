@@ -1,7 +1,19 @@
 import React from "react";
 import logo from "../assets/webgrave-logo.png";
 
-const Login = () => {
+interface LoginProps {
+    setCurrentPage: (page: string) => void;
+    onLoginSuccess: () => void;
+  }
+  
+const Login: React.FC<LoginProps> = ({ setCurrentPage, onLoginSuccess }) => {
+    const handleLogin = () => {
+        // Simulate successful login
+        // localStorage.setItem('isAuthenticated', 'true');
+
+        onLoginSuccess();
+    };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg rounded-xl p-8 max-w-sm w-full">
@@ -35,6 +47,7 @@ const Login = () => {
           </div>
 
           <button
+            onClick={handleLogin}
             type="submit"
             className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 rounded-lg transition"
           >
@@ -49,11 +62,11 @@ const Login = () => {
           </a>
         </div>
 
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <a href="/signup" className="text-primary-600 hover:underline">
+        <p className="mt-2 text-gray-500">
+            Don't have an account?{" "}
+            <button onClick={() => setCurrentPage('signup')} className="text-blue-600 underline">
             Sign up
-          </a>
+            </button>
         </p>
       </div>
     </div>
