@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Footer } from './components/Footer';
@@ -10,71 +11,48 @@ import Signup from './components/Signup';
 import Login from './components/Login';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'create' | 'scan' | 'find' | 'about' | 'login' | 'signup'>('home');
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    localStorage.getItem('isAuthenticated') === 'true'
+  );
 
-  // Check authentication state from local storage
   useEffect(() => {
-    const authStatus = localStorage.getItem('isAuthenticated');
-    setIsAuthenticated(authStatus === 'true');
+    const checkAuth = () => {
+      setIsAuthenticated(localStorage.getItem('isAuthenticated') === 'true');
+    };
+
+    window.addEventListener('storage', checkAuth); // Listen for auth changes
+    return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
-  // Function to handle login (sets authentication in local storage)
-  const handleLogin = () => {
-    localStorage.setItem('isAuthenticated', 'true');
-    setIsAuthenticated(true);
-    setCurrentPage('find');
-  };
-
-  // Function to handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    setIsAuthenticated(false);
-    setCurrentPage('home');
-  };
-
-  // Function to render the current page
-  const renderPage = () => {
-    if (!isAuthenticated && currentPage !== 'login' && currentPage !== 'signup') {
-      return <Hero onSignupClick={() => setCurrentPage('signup')} onLoginClick={() => setCurrentPage('login')} />;
-    }
-
-    switch (currentPage) {
-      case 'create':
-        return <CreateMemorial />;
-      case 'scan':
-        return <ScanCode />;
-      case 'find':
-        return <FindMemorial />;
-      case 'about':
-        return <AboutUs />;
-      case 'login':
-        return <Login setCurrentPage={setCurrentPage} onLoginSuccess={handleLogin} />;
-      case 'signup':
-        return <Signup setCurrentPage={setCurrentPage} onSignupSuccess={handleLogin} />;
-      default:
-        return isAuthenticated ? <FindMemorial/> : <Hero onSignupClick={() => setCurrentPage('signup')} onLoginClick={() => setCurrentPage('login')} />;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Show Header only if authenticated */}
-      {isAuthenticated && (
-        <Header
-          onCreateClick={() => setCurrentPage('create')}
-          onScanClick={() => setCurrentPage('scan')}
-          onFindClick={() => setCurrentPage('find')}
-          onAboutClick={() => setCurrentPage('about')}
-        />
-      )}
+    <Router>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Show Header only if authenticated */}
+        {isAuthenticated && <Header />}
 
-      {/* Render the current page */}
-      {renderPage()}
+        <Routes>
+          {isAuthenticated ? (
+            <>
+              <Route path="/find-memorials" element={<FindMemorial />} />
+              <Route path="/create-memorial" element={<CreateMemorial />} />
+              <Route path="/scan-code" element={<ScanCode />} />
+              <Route path="/about-us" element={<AboutUs />} />
+              <Route path="*" element={<Navigate to="/find-memorials" />} />
+            </>
+          ) : (
+            <>
+              <Route path="/" element={<Hero />} />
+              <Route path="/signup" element={<Signup onSignupSuccess={() => setIsAuthenticated(true)}/>} />
+              <Route path="/login" element={<Login onLoginSuccess={() => setIsAuthenticated(true)} />} />
+              <Route path="*" element={<Navigate to="/" />} />
+            </>
+          )}
+        </Routes>
 
-      {/* Show Footer only if authenticated */}
-      {isAuthenticated && <Footer />}
-    </div>
+        {/* Show Footer only if authenticated */}
+        {isAuthenticated && <Footer />}
+      </div>
+    </Router>
   );
 }
 

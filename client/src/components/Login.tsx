@@ -1,17 +1,20 @@
 import React from "react";
 import logo from "../assets/webgrave-logo.png";
+import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
-    setCurrentPage: (page: string) => void;
     onLoginSuccess: () => void;
   }
   
-const Login: React.FC<LoginProps> = ({ setCurrentPage, onLoginSuccess }) => {
-    const handleLogin = () => {
-        // Simulate successful login
-        // localStorage.setItem('isAuthenticated', 'true');
+  
+  const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+    const navigate = useNavigate();
 
-        onLoginSuccess();
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault(); // Prevent default form submission
+        localStorage.setItem('isAuthenticated', 'true');
+        onLoginSuccess(); // Update state in App.tsx
+        navigate('/find-memorials');
     };
 
   return (

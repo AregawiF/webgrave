@@ -1,11 +1,23 @@
 import { Scan, User, UserPlus, LogIn } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-interface Props {
-  onSignupClick: () => void;
-  onLoginClick: () => void;
-}
+// interface Props {
+//   onSignupClick: () => void;
+//   onLoginClick: () => void;
+// }
 
-export function Hero({ onSignupClick, onLoginClick }: Props) {
+export function Hero() {
+  const navigate = useNavigate();
+
+  const onSignupClick = () => {
+    // Handle signup click
+    navigate('/signup');
+  };
+  const onLoginClick = () => {
+    // Handle login click
+    navigate('/login');
+  }
+
   return (
     <div className="relative bg-white overflow-hidden">
       <div className="absolute inset-0 bg-primary-50/50" />

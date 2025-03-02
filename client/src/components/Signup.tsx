@@ -1,20 +1,22 @@
 import React from "react";
 import logo from "../assets/webgrave-logo.png";
+import { useNavigate } from "react-router-dom";
 
-interface SignupProps {
-    setCurrentPage: (page: string) => void;
+interface LoginProps {
     onSignupSuccess: () => void;
-  }
+}
   
-const Signup: React.FC<SignupProps> = ({ setCurrentPage, onSignupSuccess }) => {
+const Signup: React.FC<LoginProps> = ({ onSignupSuccess }) => {
+    const navigate = useNavigate();
 
-  const handleSignup = () => {
+  const handleSignup = (e: React.FormEvent) => {
     // Simulate successful signup
     // save user data to database
-    // save user data to local storage
-    // localStorage.setItem('isAuthenticated', 'true');
+    e.preventDefault(); // Prevent default form submission
+    localStorage.setItem('isAuthenticated', 'true');
+    onSignupSuccess(); // Update state in App.tsx
+    navigate('/find-memorials');
 
-    onSignupSuccess();
   };
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
