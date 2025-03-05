@@ -11,24 +11,43 @@ import Signup from './components/Signup';
 import Login from './components/Login';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem('isAuthenticated') === 'true'
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Check authentication status on mount and when localStorage changes
     const checkAuth = () => {
-      setIsAuthenticated(localStorage.getItem('isAuthenticated') === 'true');
+      const token = localStorage.getItem('authToken');
+      const expiresAt = localStorage.getItem('tokenExpiresAt');
+      
+      if (token && expiresAt) {
+        // Check if token is expired
+        if (new Date().getTime() < parseInt(expiresAt)) {
+          setIsAuthenticated(true);
+        } else {
+          // Clear expired token
+          handleLogout();
+        }
+      } else {
+        setIsAuthenticated(false);
+      }
     };
 
-    window.addEventListener('storage', checkAuth); // Listen for auth changes
+    checkAuth();
+    window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('tokenExpiresAt');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+  };
 
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        {/* Show Header only if authenticated */}
-        {isAuthenticated && <Header />}
+        <Header isAuthenticated={isAuthenticated} onLogout={handleLogout} />
 
         <Routes>
           {isAuthenticated ? (
@@ -37,20 +56,20 @@ function App() {
               <Route path="/create-memorial" element={<CreateMemorial />} />
               <Route path="/scan-code" element={<ScanCode />} />
               <Route path="/about-us" element={<AboutUs />} />
+              <Route path="/" element={<Navigate to="/find-memorials" />} />
               <Route path="*" element={<Navigate to="/find-memorials" />} />
             </>
           ) : (
             <>
               <Route path="/" element={<Hero />} />
-              <Route path="/signup" element={<Signup onSignupSuccess={() => setIsAuthenticated(true)}/>} />
+              <Route path="/signup" element={<Signup onSignupSuccess={() => setIsAuthenticated(true)} />} />
               <Route path="/login" element={<Login onLoginSuccess={() => setIsAuthenticated(true)} />} />
               <Route path="*" element={<Navigate to="/" />} />
             </>
           )}
         </Routes>
 
-        {/* Show Footer only if authenticated */}
-        {isAuthenticated && <Footer />}
+        <Footer />
       </div>
     </Router>
   );

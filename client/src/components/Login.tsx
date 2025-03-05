@@ -1,21 +1,47 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import logo from "../assets/webgrave-logo.png";
-import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
-    onLoginSuccess: () => void;
-  }
-  
-  
-  const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
-    const navigate = useNavigate();
+  onLoginSuccess: () => void;
+}
 
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault(); // Prevent default form submission
-        localStorage.setItem('isAuthenticated', 'true');
-        onLoginSuccess(); // Update state in App.tsx
-        navigate('/find-memorials');
-    };
+const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Invalid credentials');
+      }
+
+      const data = await response.json();
+      
+      // Store auth data
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('tokenExpiresAt', (new Date().getTime() + 24 * 60 * 60 * 1000).toString()); // 24 hours
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      onLoginSuccess();
+      navigate('/find-memorials');
+    } catch (error) {
+      setError('Invalid email or password');
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -27,12 +53,21 @@ interface LoginProps {
 
         <h2 className="text-2xl font-semibold text-center text-gray-800">Welcome Back</h2>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Login Form */}
-        <form className="mt-6 space-y-4">
+        <form onSubmit={handleLogin} className="mt-6 space-y-4">
           <div>
             <label className="block text-gray-600 text-sm font-medium">Email</label>
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
               placeholder="Enter your email"
               required
@@ -43,6 +78,8 @@ interface LoginProps {
             <label className="block text-gray-600 text-sm font-medium">Password</label>
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
               placeholder="Enter your password"
               required
@@ -50,7 +87,6 @@ interface LoginProps {
           </div>
 
           <button
-            onClick={handleLogin}
             type="submit"
             className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 rounded-lg transition"
           >
@@ -60,16 +96,16 @@ interface LoginProps {
 
         {/* Forgot Password & Signup Link */}
         <div className="mt-4 text-center text-sm text-gray-600">
-          <a href="/forgot-password" className="text-primary-600 hover:underline">
+          <Link to="/forgot-password" className="text-primary-600 hover:underline">
             Forgot password?
-          </a>
+          </Link>
         </div>
 
-        <p className="mt-2 text-gray-500">
-            Don't have an account?{" "}
-            <button onClick={() => setCurrentPage('signup')} className="text-blue-600 underline">
+        <p className="mt-2 text-center text-gray-500">
+          Don't have an account?{" "}
+          <Link to="/signup" className="text-blue-600 hover:underline">
             Sign up
-            </button>
+          </Link>
         </p>
       </div>
     </div>
