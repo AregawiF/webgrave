@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth.routes');
 const memorialRoutes = require('./routes/memorial.routes');
 const flowerRoutes = require('./routes/flower.routes');
+const contactRoutes = require('./routes/contact.routes');
 
 const app = express();
 
@@ -28,6 +29,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use('/api/auth', authRoutes);
 app.use('/api/memorials', memorialRoutes);
 app.use('/api/flowers', flowerRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

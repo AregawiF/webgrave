@@ -2,7 +2,27 @@ import React, { useState } from 'react';
 import { AccountForm } from '../components/forms/AccountForm';
 import { MemorialForm } from '../components/forms/MemorialForm';
 
-export function CreateMemorial() {
+// Type definitions
+interface AccountFormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  agreeToTerms: boolean;
+}
+
+interface MemorialFormData {
+  deceased: {
+    firstName: string;
+    lastName: string;
+    dateOfBirth?: string;
+    dateOfDeath?: string;
+    biography?: string;
+  };
+  photos?: string[];
+  videos?: string[];
+}
+
+const CreateMemorial: React.FC = () => {
   const [step, setStep] = useState<'account' | 'memorial'>('account');
   const [accountData, setAccountData] = useState<AccountFormData | null>(null);
 
@@ -11,13 +31,39 @@ export function CreateMemorial() {
     setStep('memorial');
   };
 
-  const handleMemorialSubmit = (data: MemorialFormData) => {
-    // Here you would typically:
-    // 1. Create the user account
-    // 2. Process the payment
-    // 3. Create the memorial
-    console.log('Account:', accountData);
-    console.log('Memorial:', data);
+  const handleMemorialSubmit = async (data: MemorialFormData) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      // First, create the memorial
+      const memorialResponse = await fetch('http://localhost:5000/api/memorials', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...data,
+          creator: accountData?.email // Link memorial to user
+        })
+      });
+
+      if (!memorialResponse.ok) {
+        throw new Error(`Failed to create memorial: ${memorialResponse.statusText}`);
+      }
+
+      const memorial = await memorialResponse.json();
+
+      // Optionally, show success message or redirect
+      alert('Memorial created successfully!');
+      
+      // Navigate to the new memorial's details page
+      window.location.href = `/memorial/${memorial._id}`;
+
+    } catch (error) {
+      console.error('Error creating memorial:', error);
+      alert(`Failed to create memorial: ${error.message}`);
+    }
   };
 
   return (
@@ -35,4 +81,6 @@ export function CreateMemorial() {
       </div>
     </div>
   );
-}
+};
+
+export default CreateMemorial;

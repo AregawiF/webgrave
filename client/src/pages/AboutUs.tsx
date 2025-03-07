@@ -1,7 +1,7 @@
 import React from 'react';
-import { Building2, Mail, Phone, MapPin, Heart, QrCode, Users, Shield } from 'lucide-react';
+import { Heart, Globe, Users, Shield, QrCode } from 'lucide-react';
 
-export default function OldAboutUs() {
+const AboutUs: React.FC = () => {
   const benefits = [
     {
       icon: Heart,
@@ -49,20 +49,45 @@ export default function OldAboutUs() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main Content */}
-        <div className="space-y-16">
-          {/* Company Info */}
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">About WebGrave</h2>
-            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              Dedicated to preserving memories and connecting generations through digital memorials.
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-16">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+            Preserving Memories, Honoring Lives
+          </h1>
+          <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+            WebGrave is more than a platform. It's a digital sanctuary where memories live forever.
+          </p>
+        </div>
+
+        {/* <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12">
+          <div className="bg-white shadow-lg rounded-lg p-8 text-center">
+            <Heart className="mx-auto h-12 w-12 text-primary-600 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Our Mission</h3>
+            <p className="text-gray-600">
+              To create a compassionate digital space that celebrates life stories, preserves memories, and provides comfort to those grieving.
             </p>
           </div>
 
-          {/* Benefits */}
-          <div>
+          <div className="bg-white shadow-lg rounded-lg p-8 text-center">
+            <Globe className="mx-auto h-12 w-12 text-primary-600 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Global Remembrance</h3>
+            <p className="text-gray-600">
+              Connect with loved ones across the world, share stories, and keep memories alive through our intuitive digital memorial platform.
+            </p>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-8 text-center">
+            <Users className="mx-auto h-12 w-12 text-primary-600 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Community Support</h3>
+            <p className="text-gray-600">
+              Build a supportive community around memories, share tributes, and find solace in collective remembrance.
+            </p>
+          </div>
+        </div> */}
+
+        {/* Benefits */}
+        <div>
             <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Why Choose WebGrave?</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {benefits.map((benefit, index) => (
@@ -95,52 +120,29 @@ export default function OldAboutUs() {
             </div>
           </div>
 
-          {/* Contact Information */}
-          <div className="bg-white rounded-xl p-8 shadow-sm">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="mt-16 bg-white shadow-lg rounded-lg overflow-hidden">
+          <div className="px-4 py-5 sm:p-6">
+            <div className="flex items-center">
+              <Shield className="h-12 w-12 text-primary-600 mr-4" />
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Contact Us</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <Building2 className="h-5 w-5 text-primary-600 mr-3" />
-                    <div>
-                      <p className="font-medium text-gray-900">WebGrave Corporation</p>
-                      <p className="text-gray-600">Digital Memorial Services</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <MapPin className="h-5 w-5 text-primary-600 mr-3" />
-                    <div>
-                      <p className="text-gray-600">123 Memory Lane</p>
-                      <p className="text-gray-600">Serenity Valley, CA 90210</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center">
-                    <Phone className="h-5 w-5 text-primary-600 mr-3" />
-                    <p className="text-gray-600">+1 (555) 123-4567</p>
-                  </div>
-
-                  <div className="flex items-center">
-                    <Mail className="h-5 w-5 text-primary-600 mr-3" />
-                    <p className="text-gray-600">contact@webgrave.com</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Business Hours</h3>
-                <div className="space-y-2 text-gray-600">
-                  <p>Monday - Friday: 9:00 AM - 5:00 PM PST</p>
-                  <p>Saturday: 10:00 AM - 2:00 PM PST</p>
-                  <p>Sunday: Closed</p>
-                </div>
+                <h3 className="text-2xl font-semibold text-gray-900">Our Commitment to Privacy</h3>
+                <p className="mt-2 text-gray-600">
+                  We understand the sensitivity of memories. Your data is protected with state-of-the-art security measures, ensuring privacy and respect.
+                </p>
               </div>
             </div>
           </div>
         </div>
+
+        <div className="mt-16 text-center">
+          <blockquote className="text-2xl italic text-gray-600 max-w-3xl mx-auto">
+            "In the tapestry of life, memories are the golden threads that connect us across time and space."
+          </blockquote>
+          <p className="mt-4 text-gray-500">- WebGrave Team</p>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default AboutUs;

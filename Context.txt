@@ -1,0 +1,86 @@
+Project Overview
+Business Name: WebGrave
+Purpose: WebGrave is a digital memorial platform where users can create and access tributes for
+loved ones. Each memorial is linked to a scannable barcode placed on gravestones for easy access.
+The ability to send digital flowers as a tribute.
+
+Website Goals
+1. Enable users to create and manage digital memorials.
+2. Allow users to send "digital flowers" (monetary contributions).
+3. Integrate scannable barcodes for accessing memorials.
+4. Provide secure payment processing for services and digital flowers.
+
+
+Pages and Features
+1. Home Page
+• Introduction to WebGrave.
+• Call-to-action buttons:
+• "Create a Memorial"
+• "Send Digital Flowers"
+• "Learn More"
+
+2. Create Memorial Page
+• Form for uploading photos, videos, and text.
+• Payment gateway for one-time setup fees.
+• Automatic generation of scannable QR codes.
+
+3. View/Access Memorial Page
+• QR code scanner integration for mobile access.
+• Manual search bar for memorials by name, date, or ID.
+• Option to send "digital flowers" with an explanation of how the funds benefit the memorial
+creator.
+
+4. Send Digital Flowers Pages
+
+Form for selecting the amount to send.
+Secure payment processing linked to the bank account of the memorial creator.
+Personalized message option with the tribute.
+Confirmation email sent to the sender and recipient.
+
+5. How It Works Page
+• Explanation of memorial creation, QR codes, and digital flowers.
+
+8. FAQ Section
+• Answers to common questions about memorial creation, payments, digital flowers, and
+affiliate earnings.
+
+9. Contact Us Page
+• Contact form.
+• Support email and phone number.
+
+Functionality Requirements
+1. Memorial Creation: Simple form and multimedia upload.
+2. QR Code Integration: Automatic generation and easy scanning.
+3. Send Digital Flowers:
+
+• Secure payment processing.
+• Link funds directly to the memorial creator's bank account.
+• Optional personalized messages with each contribution.
+
+
+5. Search Functionality: Locate memorials by name, date, or ID.
+6. Data Security: Encrypt all sensitive user data.
+7. Mobile Compatibility: Fully responsive design.
+
+• Payment Gateways: Compatible with global services like Stripe and PayPal
+
+
+
+
+
+Pages
+- find-memorials
+- create-memorial
+- send-digital-flowers
+- scan-code
+- about us
+- faq
+- contact us
+
+
+functionalities
+
+1. Enable users to create and manage digital memorials.
+2. Allow users to send "digital flowers" (monetary contributions).
+3. Integrate scannable barcodes for accessing memorials.
+4. Provide secure payment processing for services and digital flowers.

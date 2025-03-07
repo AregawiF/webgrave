@@ -120,7 +120,7 @@ const SAMPLE_MEMORIALS: Memorial[] = [
   }
 ];
 
-export function FindMemorial() {
+export default function FindMemorial() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMemorial, setSelectedMemorial] = useState<Memorial | null>(null);
   const [memorials] = useState(SAMPLE_MEMORIALS);

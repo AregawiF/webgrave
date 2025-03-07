@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Header } from './components/Header';
-import { Hero } from './components/Hero';
-import { Footer } from './components/Footer';
-import { CreateMemorial } from './pages/CreateMemorial';
-import { ScanCode } from './pages/ScanCode';
-import { FindMemorial } from './pages/FindMemorial';
-import { AboutUs } from './components/AboutUs';
-import Signup from './components/Signup';
+import Navbar from './components/Navbar';
 import Login from './components/Login';
+import Signup from './components/Signup';
+import CreateMemorial from './pages/CreateMemorial';
+import FindMemorial from './pages/FindMemorial';
+import MemorialDetailsPage from './pages/MemorialDetailsPage';
+import EditMemorial from './pages/EditMemorial';
+import SendFlowers from './pages/SendFlowers';
+import ContactForm from './pages/ContactForm';
+import PrivateRoute from './components/PrivateRoute';
+import AboutUs from './pages/AboutUs';
+import Home from './pages/Home';
+import ScanCode from './pages/ScanCode';
+import OldAboutUs from './components/AboutUs';
 
-function App() {
+const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -46,33 +51,47 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Header isAuthenticated={isAuthenticated} onLogout={handleLogout} />
-
-        <Routes>
-          {isAuthenticated ? (
-            <>
-              <Route path="/find-memorials" element={<FindMemorial />} />
-              <Route path="/create-memorial" element={<CreateMemorial />} />
-              <Route path="/scan-code" element={<ScanCode />} />
-              <Route path="/about-us" element={<AboutUs />} />
-              <Route path="/" element={<Navigate to="/find-memorials" />} />
-              <Route path="*" element={<Navigate to="/find-memorials" />} />
-            </>
-          ) : (
-            <>
-              <Route path="/" element={<Hero />} />
-              <Route path="/signup" element={<Signup onSignupSuccess={() => setIsAuthenticated(true)} />} />
-              <Route path="/login" element={<Login onLoginSuccess={() => setIsAuthenticated(true)} />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </>
-          )}
-        </Routes>
-
-        <Footer />
+      <div className="flex flex-col min-h-screen">
+        <Navbar isAuthenticated={isAuthenticated} handleLogout={handleLogout} />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/login" element={<Login onLoginSuccess={() => setIsAuthenticated(true)} />} />
+            <Route path="/signup" element={<Signup onSignupSuccess={() => setIsAuthenticated(true)} />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/find-memorials" element={<FindMemorial />} />
+            <Route path="/scan-code" element={<ScanCode />} />
+            <Route path="/old" element={<OldAboutUs />} />
+            <Route path="/" element={<Home />} />
+            <Route 
+              path="/memorial/:id" 
+              element={<MemorialDetailsPage />} 
+            />
+            <Route 
+              path="/send-flowers/:id" 
+              element={<SendFlowers />} 
+            />
+            <Route path="/contact" element={<ContactForm />} />
+            <Route 
+              path="/create-memorial" 
+              element={
+                <PrivateRoute>
+                  <CreateMemorial />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/edit-memorial/:id" 
+              element={
+                <PrivateRoute>
+                  <EditMemorial />
+                </PrivateRoute>
+              } 
+            />
+          </Routes>
+        </main>
       </div>
     </Router>
   );
-}
+};
 
 export default App;

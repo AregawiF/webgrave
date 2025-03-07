@@ -1,4 +1,4 @@
-import { Scan, User, UserPlus, LogIn } from 'lucide-react';
+import { Scan, User, UserPlus, LogIn, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // interface Props {
@@ -6,16 +6,16 @@ import { useNavigate } from 'react-router-dom';
 //   onLoginClick: () => void;
 // }
 
-export function Hero() {
+export default function Home() {
   const navigate = useNavigate();
 
-  const onSignupClick = () => {
+  const onViewClick = () => {
     // Handle signup click
-    navigate('/signup');
+    navigate('/find-memorials');
   };
-  const onLoginClick = () => {
+  const onScanClick = () => {
     // Handle login click
-    navigate('/login');
+    navigate('/scan');
   }
 
   return (
@@ -33,19 +33,19 @@ export function Hero() {
                 Honor your loved ones with digital memorials that connect the physical world with cherished memories. Create lasting tributes accessible through unique QR codes.
               </p>
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start gap-4">
-                <button 
-                  onClick={onLoginClick}
+              <button 
+                  onClick={onViewClick}
                   className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
                 >
-                  <LogIn className="h-5 w-5" />
-                  Login
+                  <Heart className="h-5 w-5" />
+                  View Memorials
                 </button>
                 <button 
-                  onClick={onSignupClick}
+                  onClick={onScanClick}
                   className="btn-secondary w-full sm:w-auto flex items-center justify-center gap-2 mt-3 sm:mt-0"
                 >
-                  <UserPlus className="h-5 w-5" />
-                  Signup 
+                  <Scan className="h-5 w-5" />
+                  Scan Code
                 </button>
               </div>
             </div>
