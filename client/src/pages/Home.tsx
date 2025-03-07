@@ -19,7 +19,7 @@ export default function Home() {
   }
 
   return (
-    <div className="relative bg-white overflow-hidden">
+    <div className="relative bg-white overflow-hidden ">
       <div className="absolute inset-0 bg-primary-50/50" />
       <div className="max-w-7xl mx-auto">
         <div className="relative z-10 pb-8 bg-transparent sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">

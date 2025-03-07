@@ -13,7 +13,6 @@ import PrivateRoute from './components/PrivateRoute';
 import AboutUs from './pages/AboutUs';
 import Home from './pages/Home';
 import ScanCode from './pages/ScanCode';
-import OldAboutUs from './components/AboutUs';
 import NotFound from './pages/NotFound';
 import Footer from './components/Footer';
 
@@ -64,7 +63,6 @@ const App: React.FC = () => {
             <Route path="/about" element={<AboutUs />} />
             <Route path="/find-memorials" element={<FindMemorial />} />
             <Route path="/scan-code" element={<ScanCode />} />
-            <Route path="/old" element={<OldAboutUs />} />
             <Route path="/" element={<Home />} />
             <Route 
               path="/memorial/:id" 
@@ -93,8 +91,8 @@ const App: React.FC = () => {
             />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <Footer/>
         </main>
+        <Footer/>
       </div>
     </Router>
   );

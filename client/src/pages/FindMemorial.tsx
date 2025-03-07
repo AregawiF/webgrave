@@ -3,6 +3,7 @@ import { Search, Scan, Filter } from 'lucide-react';
 import { MemorialDetails } from './MemorialDetails';
 import { AdminPanel } from './AdminPanel';
 import { AdvancedSearch } from '../components/AdvancedSearch';
+import { Link } from 'react-router-dom';
 
 interface Memorial {
   id: string;
@@ -200,13 +201,13 @@ export default function FindMemorial() {
                 <Filter className="h-5 w-5" />
                 Advanced Search
               </button>
-              <button 
-                onClick={() => window.location.href = '/scan'}
+              <Link 
+                to="/scan-code"
                 className="btn-secondary w-full sm:w-auto flex items-center justify-center gap-2"
               >
                 <Scan className="h-5 w-5" />
                 Scan QR Code
-              </button>
+              </Link>
             </div>
           </div>
 
