@@ -14,6 +14,8 @@ import AboutUs from './pages/AboutUs';
 import Home from './pages/Home';
 import ScanCode from './pages/ScanCode';
 import OldAboutUs from './components/AboutUs';
+import NotFound from './pages/NotFound';
+import Footer from './components/Footer';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -54,6 +56,8 @@ const App: React.FC = () => {
       <div className="flex flex-col min-h-screen">
         <Navbar isAuthenticated={isAuthenticated} handleLogout={handleLogout} />
         <main className="flex-grow">
+          {/* add footer component at the bottom of every page after every page */}
+
           <Routes>
             <Route path="/login" element={<Login onLoginSuccess={() => setIsAuthenticated(true)} />} />
             <Route path="/signup" element={<Signup onSignupSuccess={() => setIsAuthenticated(true)} />} />
@@ -87,7 +91,9 @@ const App: React.FC = () => {
                 </PrivateRoute>
               } 
             />
+            <Route path="*" element={<NotFound />} />
           </Routes>
+          <Footer/>
         </main>
       </div>
     </Router>

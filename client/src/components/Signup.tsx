@@ -193,7 +193,7 @@ const Signup: React.FC<SignupProps> = ({ onSignupSuccess }) => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-11 transform -translate-y-1/2 text-gray-500 hover:text-primary-600"
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showPassword ? <EyeOff size={25} className="translate-y-1/2"/> : <Eye size={25} className="translate-y-1/2"/>}
             </button>
           </div>
 
@@ -238,7 +238,7 @@ const Signup: React.FC<SignupProps> = ({ onSignupSuccess }) => {
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3 top-11 transform -translate-y-1/2 text-gray-500 hover:text-primary-600"
             >
-              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showConfirmPassword ? <EyeOff size={25} className="translate-y-1/2" /> : <Eye size={25} className="translate-y-1/2" />}
             </button>
           </div>
 

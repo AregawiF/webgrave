@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Home, PlusCircle, Search, MessageCircle, 
-  LogIn, UserPlus, LogOut, Info, Scan 
+  LogIn, UserPlus, LogOut, Info, Scan, Folder 
 } from 'lucide-react';
 import logo from '../assets/webgrave-logo.png';
 
@@ -29,36 +29,44 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, handleLogout }) => {
         <div className="flex items-center space-x-6">
           <Link 
             to="/find-memorials" 
-            className="flex items-center text-gray-700 hover:text-primary-600 transition"
+            className="flex items-center text-gray-700 hover:text-primary-600 transition mr-6"
           >
             <Search className="mr-2 h-5 w-5" /> Find Memorials
           </Link>
           <Link 
             to="/scan-code" 
-            className="flex items-center text-gray-700 hover:text-primary-600 transition"
+            className="flex items-center text-gray-700 hover:text-primary-600 transition mr-6"
           >
             <Scan className="mr-2 h-5 w-5" /> Scan Code
           </Link>
 
           {isAuthenticated && (
-            <Link 
-              to="/create-memorial" 
-              className="flex items-center text-gray-700 hover:text-primary-600 transition"
-            >
-              <PlusCircle className="mr-2 h-5 w-5" /> Create Memorial
-            </Link>
+            <div className='flex items-center space-x-6'>
+              <Link 
+                to="/create-memorial" 
+                className="flex items-center text-gray-700 hover:text-primary-600 transition mr-6"
+              >
+                <PlusCircle className="mr-2 h-5 w-5" /> Create Memorial
+              </Link>
+              <Link 
+                to="/my-memorials" 
+                className="flex items-center text-gray-700 hover:text-primary-600 transition mr-6"
+              >
+                <Folder className="mr-2 h-5 w-5" /> My Memorials
+              </Link>
+            </div>
           )}
 
           <Link 
             to="/about" 
-            className="flex items-center text-gray-700 hover:text-primary-600 transition"
+            className="flex items-center text-gray-700 hover:text-primary-600 transition mr-6"
           >
           {/* insert icon for about us */}
             <Info className='mr-2 h-5 w-5'/>About us
           </Link>
           <Link 
             to="/contact" 
-            className="flex items-center text-gray-700 hover:text-primary-600 transition"
+            className="flex items-center text-gray-700 hover:text-primary-600 transition mr-6"
           >
             <MessageCircle className="mr-2 h-5 w-5" /> Contact
           </Link>
