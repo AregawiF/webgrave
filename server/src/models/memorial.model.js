@@ -1,87 +1,109 @@
 const mongoose = require('mongoose');
 
-const memorialSchema = new mongoose.Schema({
-  creator: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  deceased: {
-    firstName: {
-      type: String,
-      required: true
-    },
-    lastName: {
-      type: String,
-      required: true
-    },
-    dateOfBirth: Date,
-    dateOfDeath: Date,
-    biography: String
-  },
-  photos: [{
-    url: String,
-    caption: String,
-    uploadDate: {
-      type: Date,
-      default: Date.now
-    }
-  }],
-  videos: [{
-    url: String,
-    caption: String,
-    uploadDate: {
-      type: Date,
-      default: Date.now
-    }
-  }],
-  qrCode: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  tributes: [{
-    sender: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
-    },
-    message: String,
-    amount: Number,
-    date: {
-      type: Date,
-      default: Date.now
-    }
-  }],
-  totalTributes: {
-    type: Number,
-    default: 0
-  },
-  status: {
-    type: String,
-    enum: ['active', 'inactive'],
-    default: 'active'
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
+const educationSchema = new mongoose.Schema({
+  institution: { type: String, required: true },
+  degree: { type: String, required: true },
+  fieldOfStudy: String,
+  location: String,
+  startYear: Number,
+  endYear: Number
 });
 
-// Update the updatedAt timestamp before saving
+const familyMemberSchema = new mongoose.Schema({
+  relationship: { type: String, required: true },
+  fullName: { type: String, required: true },
+  identityInfo: { type: String, required: true },
+  email: String,
+  phoneNumber: String,
+  birthdate: Date,
+  isLiving: { type: Boolean, default: true }
+});
+
+const tributeSchema = new mongoose.Schema({
+  message: String,
+  amount: { type: Number, required: true },
+  date: { type: Date, default: Date.now },
+  isAnonymous: { type: Boolean, default: false },
+  senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  senderName: String
+});
+
+const memorialSchema = new mongoose.Schema({
+  mainPicture: { type: String, required: true },
+  fullName: { type: String, required: true },
+  birthDate: { type: Date, required: true },
+  placeOfBirth: { type: String, required: true },
+  birthdayReminder: { type: Boolean, default: false },
+  deathDate: { type: Date, required: true },
+  serviceDate: Date,
+  serviceLocation: String,
+  serviceDetails: String,
+  biography: { type: String, required: true },
+  identityType: {
+    type: String,
+    enum: ['national_id', 'passport', 'ssn'],
+    required: true
+  },
+  identityNumber: { type: String, required: true },
+  nickName: String,
+  maidenName: String,
+  nationality: { type: String, required: true },
+  religion: String,
+  languagesSpoken: [String],
+  favoriteQuote: String,
+  education: [educationSchema],
+  militaryService: { type: Boolean, default: false },
+  familyMembers: [familyMemberSchema],
+  causeOfDeath: {
+    primaryCause: { type: String, required: true },
+    majorEvent: {
+      type: String,
+      enum: ['war_conflict', 'natural_disaster', 'pandemic_disease', 'major_accident', 'not_related'],
+      required: true
+    }
+  },
+  additionalMedia: [{
+    type: { type: String, enum: ['photo', 'video'] },
+    url: String
+  }],
+  enableDigitalFlowers: { type: Boolean, default: true },
+  isPublic: { type: Boolean, default: true },
+  qrCode: { type: String, unique: true },
+  tributes: [tributeSchema],
+  totalTributes: {
+    amount: { type: Number, default: 0 },
+    count: { type: Number, default: 0 }
+  },
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Update timestamps on save
 memorialSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();
 });
 
-// Create text indexes for search
-memorialSchema.index({
-  'deceased.firstName': 'text',
-  'deceased.lastName': 'text',
-  'deceased.biography': 'text'
+// Generate QR code before saving
+memorialSchema.pre('save', async function(next) {
+  if (!this.qrCode) {
+    // Generate unique QR code using memorial ID
+    this.qrCode = `memorial_${this._id}`;
+  }
+  next();
 });
 
-module.exports = mongoose.model('Memorial', memorialSchema);
+// Calculate total tributes
+memorialSchema.methods.updateTotalTributes = function() {
+  const total = this.tributes.reduce((acc, tribute) => acc + tribute.amount, 0);
+  this.totalTributes = {
+    amount: total,
+    count: this.tributes.length
+  };
+};
+
+const Memorial = mongoose.model('Memorial', memorialSchema);
+
+module.exports = Memorial;

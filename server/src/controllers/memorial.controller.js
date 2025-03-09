@@ -1,141 +1,277 @@
 const Memorial = require('../models/memorial.model');
-const { generateMemorialQRCode } = require('../utils/qr-code');
+const { generateQRCode } = require('../utils/qrCode');
+const { uploadCloudinary } = require('../utils/uploadCloudinary');
+
 
 // Create a new memorial
 exports.createMemorial = async (req, res) => {
   try {
+    // Upload main picture to Cloudinary
+    const mainPictureResult = await uploadCloudinary(req.files.mainPicture[0].path);
+    
     const memorialData = {
       ...req.body,
-      creator: req.user.id  // Set creator from authenticated user
+      mainPicture: mainPictureResult.secure_url,
+      createdBy: req.user._id
     };
 
-    // Generate QR code for the memorial
-    const { qrCode, uniqueCode } = await generateMemorialQRCode(memorialData._id);
-    memorialData.qrCode = uniqueCode;
+    // Parse dates
+    if (req.body.birthDate) memorialData.birthDate = new Date(req.body.birthDate);
+    if (req.body.deathDate) memorialData.deathDate = new Date(req.body.deathDate);
+    if (req.body.serviceDate) memorialData.serviceDate = new Date(req.body.serviceDate);
+
+    // Parse arrays and objects
+    if (req.body.languagesSpoken) memorialData.languagesSpoken = JSON.parse(req.body.languagesSpoken);
+    if (req.body.education) memorialData.education = JSON.parse(req.body.education);
+    if (req.body.familyMembers) memorialData.familyMembers = JSON.parse(req.body.familyMembers);
+    if (req.body.causeOfDeath) memorialData.causeOfDeath = JSON.parse(req.body.causeOfDeath);
+    
+    // Parse booleans
+    memorialData.birthdayReminder = req.body.birthdayReminder === 'true';
+    memorialData.militaryService = req.body.militaryService === 'true';
+    memorialData.enableDigitalFlowers = req.body.enableDigitalFlowers === 'true';
+    memorialData.isPublic = req.body.isPublic === 'true';
+
+    // Handle additional media
+    if (req.files.additionalMedia) {
+      const mediaPromises = req.files.additionalMedia.map(async (file) => {
+        const result = await uploadCloudinary(file.path);
+        return {
+          type: file.mimetype.startsWith('image/') ? 'photo' : 'video',
+          url: result.secure_url
+        };
+      });
+      memorialData.additionalMedia = await Promise.all(mediaPromises);
+    }
 
     const memorial = new Memorial(memorialData);
     await memorial.save();
 
-    res.status(201).json({
-      memorial,
-      qrCodeImage: qrCode
-    });
+    // Generate QR code with the memorial's URL
+    const qrCode = await generateQRCode(`${process.env.FRONTEND_URL}/memorial/${memorial._id}`);
+    memorial.qrCode = qrCode;
+    await memorial.save();
+
+    res.status(201).json(memorial);
   } catch (error) {
+    console.error('Create memorial error:', error);
     res.status(400).json({ message: error.message });
   }
 };
 
-// Get all memorials (public, no authentication)
+// Get all memorials with filters
 exports.getAllMemorials = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '' } = req.query;
-    
-    const searchQuery = search ? { 
-      $or: [
-        { 'deceased.firstName': { $regex: search, $options: 'i' } },
-        { 'deceased.lastName': { $regex: search, $options: 'i' } },
-        { 'deceased.biography': { $regex: search, $options: 'i' } }
-      ]
-    } : {};
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      status,
+      isPublic,
+      createdBy
+    } = req.query;
 
-    const memorials = await Memorial.find(searchQuery)
+    const query = {};
+
+    // Apply filters
+    if (search) {
+      query.$or = [
+        { fullName: new RegExp(search, 'i') },
+        { biography: new RegExp(search, 'i') }
+      ];
+    }
+    if (status) query.status = status;
+    if (isPublic !== undefined) query.isPublic = isPublic === 'true';
+    if (createdBy) query.createdBy = createdBy;
+
+    // Get total count for pagination
+    const total = await Memorial.countDocuments(query);
+
+    // Get paginated results
+    const memorials = await Memorial.find(query)
+      .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .sort({ createdAt: -1 });
-
-    const total = await Memorial.countDocuments(searchQuery);
+      .populate('createdBy', 'name email')
+      .select('-tributes'); // Exclude tributes for list view
 
     res.json({
       memorials,
       totalPages: Math.ceil(total / limit),
-      currentPage: page
+      currentPage: Number(page),
+      total
     });
   } catch (error) {
+    console.error('Get memorials error:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Get a specific memorial by ID (public, no authentication)
+// Get a specific memorial
 exports.getMemorialById = async (req, res) => {
   try {
-    const memorial = await Memorial.findById(req.params.id);
-    
+    const memorial = await Memorial.findById(req.params.id)
+      .populate('createdBy', 'name email')
+      .populate('tributes.senderId', 'name email');
+
     if (!memorial) {
       return res.status(404).json({ message: 'Memorial not found' });
     }
-    
+
+    // Check if memorial is public or if user is the creator
+    if (!memorial.isPublic && (!req.user || req.user._id.toString() !== memorial.createdBy._id.toString())) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
     res.json(memorial);
   } catch (error) {
+    console.error('Get memorial error:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Update a memorial (authenticated and must be creator)
+// Update a memorial
 exports.updateMemorial = async (req, res) => {
   try {
     const memorial = await Memorial.findById(req.params.id);
-    
+
     if (!memorial) {
       return res.status(404).json({ message: 'Memorial not found' });
     }
-    
-    // Ensure only the creator can update
-    if (memorial.creator.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to update this memorial' });
+
+    // Check if user is the creator
+    if (req.user._id.toString() !== memorial.createdBy.toString()) {
+      return res.status(403).json({ message: 'Access denied' });
     }
+
+    const updates = { ...req.body };
     
+    // Handle main picture update
+    if (req.files?.mainPicture) {
+      const mainPictureResult = await uploadCloudinary(req.files.mainPicture[0].path);
+      updates.mainPicture = mainPictureResult.secure_url;
+    }
+
+    // Parse dates
+    if (updates.birthDate) updates.birthDate = new Date(updates.birthDate);
+    if (updates.deathDate) updates.deathDate = new Date(updates.deathDate);
+    if (updates.serviceDate) updates.serviceDate = new Date(updates.serviceDate);
+
+    // Parse arrays and objects
+    if (updates.languagesSpoken) updates.languagesSpoken = JSON.parse(updates.languagesSpoken);
+    if (updates.education) updates.education = JSON.parse(updates.education);
+    if (updates.familyMembers) updates.familyMembers = JSON.parse(updates.familyMembers);
+    if (updates.causeOfDeath) updates.causeOfDeath = JSON.parse(updates.causeOfDeath);
+
+    // Parse booleans
+    if (updates.birthdayReminder !== undefined) updates.birthdayReminder = updates.birthdayReminder === 'true';
+    if (updates.militaryService !== undefined) updates.militaryService = updates.militaryService === 'true';
+    if (updates.enableDigitalFlowers !== undefined) updates.enableDigitalFlowers = updates.enableDigitalFlowers === 'true';
+    if (updates.isPublic !== undefined) updates.isPublic = updates.isPublic === 'true';
+
+    // Handle additional media
+    if (req.files?.additionalMedia) {
+      const mediaPromises = req.files.additionalMedia.map(async (file) => {
+        const result = await uploadCloudinary(file.path);
+        return {
+          type: file.mimetype.startsWith('image/') ? 'photo' : 'video',
+          url: result.secure_url
+        };
+      });
+      const newMedia = await Promise.all(mediaPromises);
+      updates.additionalMedia = [...(memorial.additionalMedia || []), ...newMedia];
+    }
+
     const updatedMemorial = await Memorial.findByIdAndUpdate(
-      req.params.id, 
-      req.body, 
+      req.params.id,
+      updates,
       { new: true, runValidators: true }
-    );
-    
+    ).populate('createdBy', 'name email');
+
     res.json(updatedMemorial);
   } catch (error) {
+    console.error('Update memorial error:', error);
     res.status(400).json({ message: error.message });
   }
 };
 
-// Delete a memorial (authenticated and must be creator)
+// Delete a memorial
 exports.deleteMemorial = async (req, res) => {
   try {
     const memorial = await Memorial.findById(req.params.id);
-    
+
     if (!memorial) {
       return res.status(404).json({ message: 'Memorial not found' });
     }
-    
-    // Ensure only the creator can delete
-    if (memorial.creator.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to delete this memorial' });
+
+    // Check if user is the creator
+    if (req.user._id.toString() !== memorial.createdBy.toString()) {
+      return res.status(403).json({ message: 'Access denied' });
     }
-    
-    await Memorial.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Memorial deleted successfully' });
+
+    await memorial.remove();
+    res.status(204).send();
   } catch (error) {
+    console.error('Delete memorial error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Add a tribute to a memorial
+exports.addTribute = async (req, res) => {
+  try {
+    const memorial = await Memorial.findById(req.params.id);
+
+    if (!memorial) {
+      return res.status(404).json({ message: 'Memorial not found' });
+    }
+
+    if (!memorial.enableDigitalFlowers) {
+      return res.status(400).json({ message: 'Digital flowers are disabled for this memorial' });
+    }
+
+    const tribute = {
+      message: req.body.message,
+      amount: req.body.amount,
+      isAnonymous: req.body.isAnonymous === 'true',
+      senderId: req.user._id,
+      senderName: req.body.isAnonymous === 'true' ? 'Anonymous' : req.user.name
+    };
+
+    memorial.tributes.push(tribute);
+    memorial.updateTotalTributes();
+    await memorial.save();
+
+    res.status(201).json(memorial);
+  } catch (error) {
+    console.error('Add tribute error:', error);
     res.status(400).json({ message: error.message });
   }
 };
 
-// Change memorial status (authenticated and must be creator)
-exports.updateMemorialStatus = async (req, res) => {
+// Remove media from a memorial
+exports.removeMedia = async (req, res) => {
   try {
-    const memorial = await Memorial.findById(req.params.id);
-    
+    const { id, mediaId } = req.params;
+    const memorial = await Memorial.findById(id);
+
     if (!memorial) {
       return res.status(404).json({ message: 'Memorial not found' });
     }
-    
-    // Ensure only the creator can change status
-    if (memorial.creator.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to change memorial status' });
+
+    // Check if user is the creator
+    if (req.user._id.toString() !== memorial.createdBy.toString()) {
+      return res.status(403).json({ message: 'Access denied' });
     }
-    
-    memorial.status = req.body.status;
+
+    memorial.additionalMedia = memorial.additionalMedia.filter(
+      media => media._id.toString() !== mediaId
+    );
+
     await memorial.save();
-    
     res.json(memorial);
   } catch (error) {
+    console.error('Remove media error:', error);
     res.status(400).json({ message: error.message });
   }
 };

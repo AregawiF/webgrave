@@ -1,4 +1,3 @@
-import React from 'react';
 import { Instagram, Facebook, Twitter } from 'lucide-react';
 
 export function SocialLinks() {

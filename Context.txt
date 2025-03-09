@@ -67,20 +67,42 @@ Functionality Requirements
 
 
 
+--- Create Memorial
 
-Pages
-- find-memorials
-- create-memorial
-- send-digital-flowers
-- scan-code
-- about us
-- faq
-- contact us
+main picture *
+Full name *
+Birth Date *
+place of Birth *
+- birthday reminder
+Death day *
+service date
+service location
+service details
+biography *
+Identity Number * ( dropdown of national id, passport, SSN )
+Nick name
+Maiden Name
+Nationality *
+Religion
+languages spoken
+favorite quote
+Education ( Institution *, degree *, field of study, location, start year, end year )
+Military Service (served or not boolean)
+Family Members ( relationship *, full name *, Identity info *, email, phone number, birthdate, living or not boolean )
+cause of death * ( primary cause, Major event (war/conflict, natural disaster, pandemic/disease, major accident, not related to major event )
+Additional media (photos or videos )
+enable digital flowers ? (boolean)
+make this memorial public ? ( boolean )
+unique qr code (generated)
+tributes (  message, amount, date and if not anonymous sender id and sender name )
+total tributes ( number ) anonymous or not should be considered
+status ( active or not active )
 
 
-functionalities
+--- send digital flowers
+- email the sender person name, sender message and payed amount, the sender could be anonymous (not logged in)
 
-1. Enable users to create and manage digital memorials.
-2. Allow users to send "digital flowers" (monetary contributions).
-3. Integrate scannable barcodes for accessing memorials.
-4. Provide secure payment processing for services and digital flowers.
+Profile ( to edit profile info  like bank acc)
+
+--- find memorials
+- search by name, date, or ID
