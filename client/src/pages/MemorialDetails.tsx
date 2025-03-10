@@ -127,7 +127,7 @@ export function MemorialDetails({ memorial, onClose }: Props) {
                   </div>
                   <div className="flex justify-center">
                     <QRCode
-                      value={`https://webgrave.com/memorial/${memorial.identityNumber}`}
+                      value={`https://webgrave.com/memorial/${memorial._id}`}
                       size={128}
                       level="H"
                       includeMargin={true}

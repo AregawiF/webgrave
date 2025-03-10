@@ -1,6 +1,4 @@
-import React from 'react';
-import { User, Flag, Languages, Book, CreditCard, QrCode } from 'lucide-react';
-import QRCode from 'qrcode.react';
+import { User, Flag, Languages, Book, CreditCard } from 'lucide-react';
 
 interface Props {
   formData: any;
@@ -9,11 +7,6 @@ interface Props {
 }
 
 export function PersonalInfoSection({ formData, setFormData, errors }: Props) {
-  const generateQRValue = () => {
-    if (!formData.identityNumber) return '';
-    return `https://webgrave.com/memorial/${formData.identityNumber}`;
-  };
-
   return (
     <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm">
       <div className="flex items-center">
@@ -67,27 +60,6 @@ export function PersonalInfoSection({ formData, setFormData, errors }: Props) {
               )}
             </div>
           </div>
-
-          {formData.identityNumber && (
-            <div className="flex items-center justify-center p-4 bg-white rounded-lg">
-              <div className="text-center">
-                <div className="mb-2">
-                  <QrCode className="h-5 w-5 text-gray-400 mx-auto" />
-                  <span className="text-sm text-gray-500">Memorial QR Code</span>
-                </div>
-                {/* <QRCode
-                  value={generateQRValue()}
-                  size={128}
-                  level="H"
-                  includeMargin={true}
-                  className="mx-auto"
-                /> */}
-                <p className="mt-2 text-xs text-gray-500">
-                  Scan to access digital memorial
-                </p>
-              </div>
-            </div>
-          )}
         </div>
 
         <div>

@@ -45,7 +45,6 @@ export function MemorialForm({ onSubmit }: Props) {
     disasterType: '',
     disasterName: '',
     disasterDate: '',
-    qrcode: '',
     // Adding required fields for backend
     identityType: '',
     identityNumber: ''

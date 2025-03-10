@@ -1,5 +1,4 @@
 const Memorial = require('../models/memorial.model');
-const { generateQRCode } = require('../utils/qrCode');
 const uploadCloudinary = require('../utils/uploadCloudinary');
 
 
@@ -45,11 +44,6 @@ exports.createMemorial = async (req, res) => {
     }
 
     const memorial = new Memorial(memorialData);
-    await memorial.save();
-
-    // Generate QR code with the memorial's URL
-    // const qrCode = await generateQRCode(`${process.env.FRONTEND_URL}/memorial/${memorial._id}`);
-    memorial.qrCode = memorialData.qrcode ;
     await memorial.save();
 
     res.status(201).json(memorial);

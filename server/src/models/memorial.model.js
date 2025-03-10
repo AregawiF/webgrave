@@ -68,7 +68,6 @@ const memorialSchema = new mongoose.Schema({
   }],
   enableDigitalFlowers: { type: Boolean, default: true },
   isPublic: { type: Boolean, default: true },
-  qrCode: { type: String, unique: true },
   tributes: [tributeSchema],
   totalTributes: {
     amount: { type: Number, default: 0 },
@@ -83,15 +82,6 @@ const memorialSchema = new mongoose.Schema({
 // Update timestamps on save
 memorialSchema.pre('save', function(next) {
   this.updatedAt = new Date();
-  next();
-});
-
-// Generate QR code before saving
-memorialSchema.pre('save', async function(next) {
-  if (!this.qrCode) {
-    // Generate unique QR code using memorial ID
-    this.qrCode = `memorial_${this._id}`;
-  }
   next();
 });
 

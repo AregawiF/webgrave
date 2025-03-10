@@ -25,7 +25,6 @@ interface Memorial {
   };
   photos: MediaFile[];
   videos: MediaFile[];
-  qrCode: string;
   status: 'active' | 'inactive';
   totalTributes: number;
 }
@@ -208,7 +207,8 @@ const MemorialDetailsPage: React.FC = () => {
       <div className="bg-white shadow-lg rounded-xl p-6 mb-8 flex items-center">
         <div className="mr-6">
           <QRCode
-            value={`https://webgrave.com/memorial/${memorial._id}`}
+            // value={`https://webgrave.com/memorial/${memorial._id}`}
+            value={`${window.location.origin}/memorial/${memorial._id}`}
             size={128}
             level="H"
             includeMargin={true}
