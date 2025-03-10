@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Globe, Heart, Download, Flower2, X, MapPin, Book, Flag, CreditCard, Briefcase, GraduationCap, Medal, Users } from 'lucide-react';
+import { Calendar, Globe, Heart, Download, Flower2, X, MapPin, Book, Flag, CreditCard, Briefcase, GraduationCap, Medal, Users, Minus, Plus } from 'lucide-react';
 import QRCode from 'qrcode.react';
 
 interface MediaFile {
@@ -54,6 +54,11 @@ interface Props {
 
 export function MemorialDetails({ memorial, onClose }: Props) {
   const [activeTab, setActiveTab] = useState<'about' | 'family' | 'career' | 'gallery'>('about');
+  const [donation, setDonation] = useState(5); // Start at $5
+
+  const incrementDonation = () => setDonation((prev) => prev + 5);
+  const decrementDonation = () => setDonation((prev) => (prev > 5 ? prev - 5 : 5));
+
   
   const renderTabContent = () => {
     switch (activeTab) {
@@ -135,7 +140,7 @@ export function MemorialDetails({ memorial, onClose }: Props) {
             {/* Description */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Life Story</h3>
-              <p className="text-gray-600 leading-relaxed whitespace-pre-line">{memorial.description}</p>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line">{memorial.biography}</p>
             </div>
 
             {/* Achievements */}
@@ -167,7 +172,7 @@ export function MemorialDetails({ memorial, onClose }: Props) {
                 <div key={index} className="border rounded-lg p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="font-medium text-gray-900">{member.name}</h4>
+                      <h4 className="font-medium text-gray-900">{member.fullName}</h4>
                       <p className="text-sm text-gray-500">{member.relationship}</p>
                     </div>
                     {member.isLiving ? (
@@ -240,9 +245,9 @@ export function MemorialDetails({ memorial, onClose }: Props) {
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <h3 className="text-xl font-semibold text-gray-900 mb-6">Media Gallery</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-              {memorial.mediaFiles.map((file, index) => (
+              {memorial.additionalMedia.map((file, index) => (
                 <div key={index} className="group relative rounded-xl overflow-hidden bg-gray-50">
-                  {file.type === 'image' ? (
+                  {file.type === 'photo' ? (
                     <div className="aspect-w-4 aspect-h-3">
                       <img
                         src={file.url}
@@ -287,13 +292,13 @@ export function MemorialDetails({ memorial, onClose }: Props) {
           {/* Header with profile image */}
           <div className="relative h-80 rounded-t-2xl overflow-hidden">
             <img
-              src={memorial.profileImage}
-              alt={memorial.name}
+              src={memorial.mainPicture}
+              alt={memorial.fullName}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-              <h1 className="text-4xl font-bold mb-2">{memorial.name}</h1>
+              <h1 className="text-4xl font-bold mb-2">{memorial.fullName}</h1>
               <div className="flex items-center gap-4 text-white/90">
                 <div className="flex items-center">
                   <Calendar className="h-5 w-5 mr-2" />
@@ -353,28 +358,28 @@ export function MemorialDetails({ memorial, onClose }: Props) {
                       <p className="text-gray-600 mb-6">
                         Honor the memory with a digital flower and optional donation
                       </p>
+
+                      {/* Donation Controls */}
+                      <div className="flex items-center justify-center gap-4 mb-4">
+                        <button onClick={decrementDonation} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+                          <Minus className="h-4 w-4 text-gray-700" />
+                        </button>
+                        <span className="text-lg font-semibold">${donation}</span>
+                        <button onClick={incrementDonation} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+                          <Plus className="h-4 w-4 text-gray-700" />
+                        </button>
+                      </div>
+
+                      {/* Send Flowers Button */}
                       <button className="btn-primary w-full flex items-center justify-center gap-2">
                         <Heart className="h-5 w-5" />
-                        Send Flowers (${memorial.suggestedDonationAmount})
+                        Send Flowers (${donation})
                       </button>
                     </div>
                   </div>
                 )}
-
-                {/* Memorial ID Card */}
-                <div className="bg-white p-6 rounded-xl border border-gray-200">
-                  <div className="text-center">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Memorial ID</h3>
-                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                      <p className="font-mono text-lg text-gray-700">{memorial.id}</p>
-                    </div>
-                    <button className="btn-secondary w-full flex items-center justify-center gap-2">
-                      <Download className="h-5 w-5" />
-                      Download Memorial Card
-                    </button>
-                  </div>
-                </div>
               </div>
+              
             </div>
           </div>
         </div>

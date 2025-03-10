@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Scan, Filter } from 'lucide-react';
 import { MemorialDetails } from './MemorialDetails';
 import { AdminPanel } from './AdminPanel';
@@ -124,10 +124,32 @@ const SAMPLE_MEMORIALS: Memorial[] = [
 export default function FindMemorial() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMemorial, setSelectedMemorial] = useState<Memorial | null>(null);
-  const [memorials] = useState(SAMPLE_MEMORIALS);
+  const [memorials, setMemorials] = useState([]);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [searchCriteria, setSearchCriteria] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchMemorials = async () => {
+      const response = await fetch('http://localhost:5000/api/memorials', {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('error fetching memorials', errorData);
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Api response:', data);
+      setMemorials(data.memorials);
+      setLoading(false);
+    };
+
+    fetchMemorials();
+  }, []);
 
   const filteredMemorials = searchQuery.toLowerCase() === 'admin pages'
     ? []
@@ -137,28 +159,26 @@ export default function FindMemorial() {
             if (!value) return true;
             switch (key) {
               case 'name':
-                return memorial.name.toLowerCase().includes(value.toString().toLowerCase());
-              case 'birthYear':
-                return memorial.birthYear === value;
-              case 'deathYear':
-                return memorial.deathYear === value;
+                return memorial.fullName.toLowerCase().includes(value.toString().toLowerCase());
+              case 'birthDate':
+                return memorial.birthDate === value;
+              case 'deathDate':
+                return memorial.deathDate === value;
               case 'nationality':
-                return memorial.nationality?.toLowerCase().includes(value.toString().toLowerCase());
+                return memorial.nationality.toLowerCase().includes(value.toString().toLowerCase());
               case 'religion':
                 return memorial.religion?.toLowerCase().includes(value.toString().toLowerCase());
-              case 'causeOfDeath':
-                return memorial.causeOfDeath?.toLowerCase().includes(value.toString().toLowerCase());
-              case 'disasterType':
-                return memorial.disasterType === value;
-              case 'disasterName':
-                return memorial.disasterName === value;
+              case 'primaryCause':
+                return memorial.causeOfDeath?.primaryCause.toLowerCase().includes(value.toString().toLowerCase());
+              case 'majorEvent':
+                return memorial.causeOfDeath?.majorEvent === value;
               default:
                 return true;
             }
           });
         }
-        return memorial.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-               memorial.id.toLowerCase().includes(searchQuery.toLowerCase());
+        return memorial.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               memorial._id.toLowerCase().includes(searchQuery.toLowerCase());
       });
 
   // Show admin panel when searching for "admin pages"
@@ -175,6 +195,10 @@ export default function FindMemorial() {
     return <AdminPanel />;
   }
 
+  const formatYear = (dateString: string) => {
+    return new Date(dateString).getFullYear();
+  };
+
   return (
     <div className="min-h-screen bg-memorial-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -188,7 +212,7 @@ export default function FindMemorial() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search by name or ID number..."
+                  placeholder="Search by name "
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="input-search"
@@ -215,27 +239,27 @@ export default function FindMemorial() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredMemorials.map((memorial) => (
               <div 
-                key={memorial.id}
+                key={memorial._id}
                 className="memorial-card group cursor-pointer"
                 onClick={() => setSelectedMemorial(memorial)}
               >
                 <div className="aspect-w-1 aspect-h-1 relative overflow-hidden">
                   <img
-                    src={memorial.profileImage}
-                    alt={memorial.name}
+                    src={memorial.mainPicture}
+                    alt={memorial.fullName}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
                 <div className="p-5">
                   <h3 className="text-xl font-semibold text-memorial-900 mb-1 group-hover:text-indigo-600 transition-colors">
-                    {memorial.name}
+                    {memorial.fullName}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {memorial.birthYear} - {memorial.deathYear}
+                    {formatYear(memorial.birthDate)} - {formatYear(memorial.deathDate)}
                   </p>
-                  <p className="text-xs text-gray-400 mt-2 font-mono">
-                    ID: {memorial.id}
+                  <p className="text-gray-600 mt-2 font-mono">
+                    Digital flowers: {memorial.enableDigitalFlowers ? 'Allowed' : 'Not Allowed'}
                   </p>
                 </div>
               </div>

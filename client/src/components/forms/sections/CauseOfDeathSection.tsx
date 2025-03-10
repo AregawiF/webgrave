@@ -25,13 +25,13 @@ export function CauseOfDeathSection({ formData, setFormData, errors }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Primary Cause
+            Primary Cause <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             value={formData.causeOfDeath}
             onChange={(e) => setFormData({ ...formData, causeOfDeath: e.target.value })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500"
+            className={`mt-1 block w-full rounded-md ${errors.causeOfDeath ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'} shadow-sm`}
             placeholder="e.g., Heart Disease, Cancer"
           />
           {errors.causeOfDeath && (

@@ -75,7 +75,7 @@ const memorialSchema = new mongoose.Schema({
     count: { type: Number, default: 0 }
   },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdBy: { type: String },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

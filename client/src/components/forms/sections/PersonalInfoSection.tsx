@@ -31,34 +31,40 @@ export function PersonalInfoSection({ formData, setFormData, errors }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Identity Number
+                Identity Number <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.identityNumber || ''}
                 onChange={(e) => setFormData({ ...formData, identityNumber: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                className={`mt-1 block w-full rounded-md ${errors.identityNumber ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'} shadow-sm`}
                 placeholder="National ID, SSN, etc."
               />
-              <p className="mt-1 text-xs text-gray-500">
-                This helps with legal identification and family connections
-              </p>
+              {errors.identityNumber ? (
+                <p className="mt-1 text-sm text-red-600">{errors.identityNumber}</p>
+              ) : (
+                <p className="mt-1 text-xs text-gray-500">
+                  This helps with legal identification and family connections
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Document Type
+                Document Type <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.identityType || ''}
                 onChange={(e) => setFormData({ ...formData, identityType: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                className={`mt-1 block w-full rounded-md ${errors.identityType ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'} shadow-sm`}
               >
                 <option value="">Select type...</option>
                 <option value="national_id">National ID</option>
                 <option value="passport">Passport</option>
                 <option value="ssn">Social Security Number</option>
-                <option value="other">Other</option>
               </select>
+              {errors.identityType && (
+                <p className="mt-1 text-sm text-red-600">{errors.identityType}</p>
+              )}
             </div>
           </div>
 
@@ -69,13 +75,13 @@ export function PersonalInfoSection({ formData, setFormData, errors }: Props) {
                   <QrCode className="h-5 w-5 text-gray-400 mx-auto" />
                   <span className="text-sm text-gray-500">Memorial QR Code</span>
                 </div>
-                <QRCode
+                {/* <QRCode
                   value={generateQRValue()}
                   size={128}
                   level="H"
                   includeMargin={true}
                   className="mx-auto"
-                />
+                /> */}
                 <p className="mt-2 text-xs text-gray-500">
                   Scan to access digital memorial
                 </p>
@@ -112,7 +118,7 @@ export function PersonalInfoSection({ formData, setFormData, errors }: Props) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Nationality
+            Nationality <span className="text-red-500">*</span>
           </label>
           <div className="mt-1 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -122,10 +128,13 @@ export function PersonalInfoSection({ formData, setFormData, errors }: Props) {
               type="text"
               value={formData.nationality}
               onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-              className="block w-full pl-10 rounded-md border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500"
-              placeholder="Nationality"
+              className={`block w-full pl-10 rounded-md ${errors.nationality ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'} shadow-sm`}
+              placeholder="E.g., American, British, etc."
             />
           </div>
+          {errors.nationality && (
+            <p className="mt-1 text-sm text-red-600">{errors.nationality}</p>
+          )}
         </div>
 
         <div>

@@ -8,7 +8,7 @@ import { PaymentModal } from './PaymentModal';
 import { CauseOfDeathSection } from './sections/CauseOfDeathSection';
 
 interface Props {
-  onSubmit: (data: MemorialFormData) => void;
+  onSubmit: (data: any) => void;
 }
 
 export function MemorialForm({ onSubmit }: Props) {
@@ -44,7 +44,11 @@ export function MemorialForm({ onSubmit }: Props) {
     disasterTag: '',
     disasterType: '',
     disasterName: '',
-    disasterDate: ''
+    disasterDate: '',
+    qrcode: '',
+    // Adding required fields for backend
+    identityType: '',
+    identityNumber: ''
   });
   const [showPayment, setShowPayment] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -52,14 +56,25 @@ export function MemorialForm({ onSubmit }: Props) {
   const validate = () => {
     const newErrors: Record<string, string> = {};
     
+    // Basic information validations
     if (!formData.name) newErrors.name = 'Name is required';
     if (!formData.birthDate) newErrors.birthDate = 'Birth date is required';
     if (!formData.birthPlace) newErrors.birthPlace = 'Place of birth is required';
     if (!formData.deathDate) newErrors.deathDate = 'Death date is required';
     if (!formData.description) newErrors.description = 'Description is required';
-    if (!formData.causeOfDeath) newErrors.causeOfDeath = 'Cause of death is required';
-    if (formData.enableDigitalFlowers && formData.suggestedDonationAmount < 1) {
-      newErrors.suggestedDonationAmount = 'Minimum donation amount is $1';
+    
+    // Required identity information
+    if (!formData.identityType) newErrors.identityType = 'Identity type is required';
+    if (!formData.identityNumber) newErrors.identityNumber = 'Identity number is required';
+    if (!formData.nationality) newErrors.nationality = 'Nationality is required';
+    
+    // Cause of death validations
+    if (!formData.causeOfDeath) newErrors.causeOfDeath = 'Primary cause of death is required';
+    
+    
+    // Profile image validation (required by backend)
+    if (!formData.profileImage) {
+      newErrors.profileImage = 'Profile picture is required';
     }
     
     setErrors(newErrors);
@@ -126,7 +141,7 @@ export function MemorialForm({ onSubmit }: Props) {
       {/* Profile Image Section */}
       <div className="space-y-4">
         <label className="block text-sm font-medium text-gray-700">
-          Profile Picture
+          Profile Picture <span className="text-red-500">*</span>
         </label>
         <div className="flex items-center justify-center">
           <div className="relative">
@@ -161,6 +176,12 @@ export function MemorialForm({ onSubmit }: Props) {
             )}
           </div>
         </div>
+        {errors.profileImage && (
+          <p className="mt-1 text-sm text-red-600 flex items-center">
+            <AlertCircle className="h-4 w-4 mr-1" />
+            {errors.profileImage}
+          </p>
+        )}
       </div>
 
       {/* Basic Information */}
@@ -426,7 +447,7 @@ export function MemorialForm({ onSubmit }: Props) {
           <Flower2 className="h-5 w-5 text-primary-600" />
         </div>
 
-        {formData.enableDigitalFlowers && (
+        {/* {formData.enableDigitalFlowers && (
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Suggested Donation Amount
@@ -450,7 +471,7 @@ export function MemorialForm({ onSubmit }: Props) {
               </p>
             )}
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Privacy Setting */}

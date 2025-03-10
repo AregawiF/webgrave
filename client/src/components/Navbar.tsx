@@ -65,6 +65,9 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, handleLogout }) => {
 
           {!isAuthenticated ? (
             <div className="flex items-center space-x-4">
+              <Link to="/signup" className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
+                <PlusCircle className="mr-2 h-5 w-5" /> Create Memorial
+              </Link>
               <Link to="/login" className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
                 <LogIn className="mr-2 h-5 w-5" /> Login
               </Link>
@@ -125,6 +128,9 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, handleLogout }) => {
 
           {!isAuthenticated ? (
             <div className="flex flex-col space-y-2">
+              <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center pb-2`}>
+                Create Memorial
+              </Link>
               <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
                 Login
               </Link>
