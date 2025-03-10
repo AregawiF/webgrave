@@ -69,7 +69,7 @@ const CreateMemorial: React.FC = () => {
       };
       formData.append('causeOfDeath', JSON.stringify(causeOfDeath));
 
-      
+
       // const user = localStorage.getItem('user'); // Get stored user data as a string
 
       // if (user) {
@@ -96,7 +96,7 @@ const CreateMemorial: React.FC = () => {
 
       console.log("submitted data", formData);
       // Make the API request
-      const response = await fetch('http://localhost:5000/api/memorials', {
+      const response = await fetch('https://webgrave.onrender.com/api/memorials', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
