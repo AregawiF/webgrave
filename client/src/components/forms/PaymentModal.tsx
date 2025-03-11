@@ -1,4 +1,7 @@
 import { CreditCard, X } from 'lucide-react';
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import Checkout from './Checkout';
+const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID;
 
 interface Props {
   amount: number;
@@ -39,13 +42,17 @@ export function PaymentModal({ amount, onComplete, onClose }: Props) {
             </ul>
           </div>
 
+          <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID }}>
+            <Checkout onSuccess={() => onComplete(true)} />
+          </PayPalScriptProvider>
+
           <div className="space-y-3">
-            <button
+            {/* <button
               onClick={() => onComplete(true)}
               className="w-full btn-primary"
             >
               Proceed (Demo)
-            </button>
+            </button> */}
             <button
               onClick={onClose}
               className="w-full btn-secondary"

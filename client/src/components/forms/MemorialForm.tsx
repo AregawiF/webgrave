@@ -7,6 +7,7 @@ import { MilitaryServiceSection } from './sections/MilitaryServiceSection';
 import { PaymentModal } from './PaymentModal';
 import { CauseOfDeathSection } from './sections/CauseOfDeathSection';
 
+
 interface Props {
   onSubmit: (data: any) => void;
 }
@@ -493,7 +494,6 @@ export function MemorialForm({ onSubmit }: Props) {
       >
         Create Memorial
       </button>
-
       {/* Payment Modal */}
       {showPayment && (
         <PaymentModal
