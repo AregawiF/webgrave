@@ -105,9 +105,7 @@ exports.getAllMemorials = async (req, res) => {
 // Get a specific memorial
 exports.getMemorialById = async (req, res) => {
   try {
-    const memorial = await Memorial.findById(req.params.id)
-      .populate('createdBy', 'name email')
-      .populate('tributes.senderId', 'name email');
+    const memorial = await Memorial.findById(req.params.id);
 
     if (!memorial) {
       return res.status(404).json({ message: 'Memorial not found' });
@@ -127,6 +125,7 @@ exports.getMemorialById = async (req, res) => {
 
 // Update a memorial
 exports.updateMemorial = async (req, res) => {
+  console.log('Update memorial:', req.body);  
   try {
     const memorial = await Memorial.findById(req.params.id);
 
@@ -135,7 +134,8 @@ exports.updateMemorial = async (req, res) => {
     }
 
     // Check if user is the creator
-    if (req.user._id.toString() !== memorial.createdBy.toString()) {
+    console.log(req.user.userId.toString(), memorial.createdBy.toString());
+    if (req.user.userId.toString() !== memorial.createdBy.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -200,7 +200,7 @@ exports.deleteMemorial = async (req, res) => {
     }
 
     // Check if user is the creator
-    if (req.user._id.toString() !== memorial.createdBy.toString()) {
+    if (req.user.userId.toString() !== memorial.createdBy.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
 

@@ -3,7 +3,7 @@ import { Search, Scan, Filter } from 'lucide-react';
 import { MemorialDetails } from './MemorialDetails';
 import { AdminPanel } from './AdminPanel';
 import { AdvancedSearch } from '../components/AdvancedSearch';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface Memorial {
   id: string;
@@ -15,7 +15,7 @@ interface Memorial {
   deathDate: string;
   description: string;
   isPublic: boolean;
-  mediaFiles: {
+  mediaFiles: { 
     type: 'image' | 'video' | 'document';
     url: string;
     caption: string;
@@ -129,6 +129,7 @@ export default function FindMemorial() {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [searchCriteria, setSearchCriteria] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMemorials = async () => {
@@ -241,7 +242,8 @@ export default function FindMemorial() {
               <div 
                 key={memorial._id}
                 className="memorial-card group cursor-pointer"
-                onClick={() => setSelectedMemorial(memorial)}
+                onClick={() => navigate(`/memorial/${memorial._id}`)}
+                // onClick={() => setSelectedMemorial(memorial)}
               >
                 <div className="aspect-w-1 aspect-h-1 relative overflow-hidden">
                   <img
