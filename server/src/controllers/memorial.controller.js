@@ -11,7 +11,7 @@ exports.createMemorial = async (req, res) => {
     const memorialData = {
       ...req.body,
       mainPicture: mainPictureResult.secure_url,
-      createdBy: req.user._id
+      createdBy: req.user.userId
     };
 
     // Parse dates
@@ -45,6 +45,7 @@ exports.createMemorial = async (req, res) => {
 
     const memorial = new Memorial(memorialData);
     await memorial.save();
+    console.log(memorial);
 
     res.status(201).json(memorial);
   } catch (error) {
@@ -269,3 +270,54 @@ exports.removeMedia = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+exports.getMyMemorials = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      status,
+      isPublic
+    } = req.query;
+
+    // Ensure user is authenticated
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const query = { createdBy: req.user.userId }; // Filter by logged-in user
+
+    // Apply additional filters
+    if (search) {
+      query.$or = [
+        { fullName: new RegExp(search, 'i') },
+        { biography: new RegExp(search, 'i') }
+      ];
+    }
+    if (status) query.status = status;
+    if (isPublic !== undefined) query.isPublic = isPublic === 'true';
+
+    // Get total count for pagination
+    const total = await Memorial.countDocuments(query);
+
+    // Get paginated results
+    const memorials = await Memorial.find(query)
+      .sort({ createdAt: -1 })
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit))
+      .populate('createdBy', 'name email')
+      .select('-tributes'); // Exclude tributes for list view
+
+    res.json({
+      memorials,
+      totalPages: Math.ceil(total / limit),
+      currentPage: Number(page),
+      total
+    });
+  } catch (error) {
+    console.error('Get memorials error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+

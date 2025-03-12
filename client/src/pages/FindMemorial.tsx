@@ -132,7 +132,7 @@ export default function FindMemorial() {
 
   useEffect(() => {
     const fetchMemorials = async () => {
-      const response = await fetch('https://webgrave.onrender.com/api/memorials', {
+      const response = await fetch('http://localhost:5000/api/memorials', {
         method: 'GET',
       });
 

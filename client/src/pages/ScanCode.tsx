@@ -11,7 +11,7 @@ export default function ScanCode() {
       scannerRef.current = new Html5QrcodeScanner(
         "qr-reader",
         {
-          fps: 10, // Frames per second for scanning
+          fps: 10, // Fra`me`s per second for scanning
           qrbox: { width: 250, height: 250 }, // Scanning area
           supportedScanTypes: [Html5QrcodeSupportedFormats.QR_CODE],
         },

@@ -5,6 +5,7 @@ const multerUpload = require('../middleware/multer');
 const {
   createMemorial,
   getAllMemorials,
+  getMyMemorials,
   getMemorialById,
   updateMemorial,
   deleteMemorial,
@@ -12,8 +13,9 @@ const {
 
 // Public routes (no authentication)
 router.get('/', getAllMemorials);
-router.get('/:id', getMemorialById);
+router.get('/my-memorials', authenticate, getMyMemorials);
 
+router.get('/:id', getMemorialById);
 // Protected routes (authentication required)
 router.post('/', authenticate, multerUpload.fields([{ name: 'mainPicture', maxCount: 1 }, { name: 'additionalMedia', maxCount: 10 }]), createMemorial);
 router.put('/:id', authenticate, multerUpload.fields([{ name: 'mainPicture', maxCount: 1 }, { name: 'additionalMedia', maxCount: 10 }]), updateMemorial);

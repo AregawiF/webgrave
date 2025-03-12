@@ -15,7 +15,7 @@ export function FamilyMembersSection({ formData, setFormData }: Props) {
         ...formData.familyMembers,
         {
           relationship: '',
-          name: '',
+          fullName: '',
           isLiving: true,
           email: '',
           phone: '',
@@ -105,8 +105,8 @@ export function FamilyMembersSection({ formData, setFormData }: Props) {
                 </label>
                 <input
                   type="text"
-                  value={member.name}
-                  onChange={(e) => updateFamilyMember(index, 'name', e.target.value)}
+                  value={member.fullName}
+                  onChange={(e) => updateFamilyMember(index, 'fullName', e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-primary-500 focus:border-primary-500"
                   placeholder="Enter full name"
                 />

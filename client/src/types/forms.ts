@@ -7,7 +7,7 @@ export interface AccountFormData {
 
 export interface FamilyMember {
   relationship: string;
-  name: string;
+  fullName: string;
   isLiving: boolean;
   email?: string;
   phone?: string;

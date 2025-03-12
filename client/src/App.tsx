@@ -15,6 +15,7 @@ import Home from './pages/Home';
 import ScanCode from './pages/ScanCode';
 import NotFound from './pages/NotFound';
 import Footer from './components/Footer';
+import MyMemorials from './pages/MyMemorials';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -80,6 +81,14 @@ const App: React.FC = () => {
                   <CreateMemorial />
                 </PrivateRoute>
               } 
+            />
+            <Route 
+              path="/my-memorials" 
+              element={
+                <PrivateRoute>
+                  <MyMemorials />
+                </PrivateRoute>
+              }
             />
             <Route 
               path="/edit-memorial/:id" 

@@ -15,7 +15,7 @@ export default function Home() {
   };
   const onScanClick = () => {
     // Handle login click
-    navigate('/scan');
+    navigate('/scan-code');
   }
 
   return (

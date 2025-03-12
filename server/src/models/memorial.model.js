@@ -12,7 +12,8 @@ const educationSchema = new mongoose.Schema({
 const familyMemberSchema = new mongoose.Schema({
   relationship: { type: String, required: true },
   fullName: { type: String, required: true },
-  identityInfo: { type: String, required: true },
+  identityType: { type: String, enum: ['national_id', 'passport', 'ssn'], required: true },
+  identityNumber: { type: String, required: true }, 
   email: String,
   phoneNumber: String,
   birthdate: Date,
@@ -28,6 +29,18 @@ const tributeSchema = new mongoose.Schema({
   senderName: String
 });
 
+const causeOfDeathSchema = new mongoose.Schema({
+  primaryCause: { type: String, required: true },
+  majorEvent: {
+    type: String,
+    enum: ['war_conflict', 'natural_disaster', 'pandemic_disease', 'major_accident', 'not_related'],
+    required: true
+  },
+  eventName: String,
+  eventDate: Date
+});
+
+
 const memorialSchema = new mongoose.Schema({
   mainPicture: { type: String, required: true },
   fullName: { type: String, required: true },
@@ -39,11 +52,7 @@ const memorialSchema = new mongoose.Schema({
   serviceLocation: String,
   serviceDetails: String,
   biography: { type: String, required: true },
-  identityType: {
-    type: String,
-    enum: ['national_id', 'passport', 'ssn'],
-    required: true
-  },
+  identityType: { type: String, enum: ['national_id', 'passport', 'ssn'], required: true },
   identityNumber: { type: String, required: true },
   nickName: String,
   maidenName: String,
@@ -54,14 +63,7 @@ const memorialSchema = new mongoose.Schema({
   education: [educationSchema],
   militaryService: { type: Boolean, default: false },
   familyMembers: [familyMemberSchema],
-  causeOfDeath: {
-    primaryCause: { type: String, required: true },
-    majorEvent: {
-      type: String,
-      enum: ['war_conflict', 'natural_disaster', 'pandemic_disease', 'major_accident', 'not_related'],
-      required: true
-    }
-  },
+  causeOfDeath: { type: causeOfDeathSchema, required: true }, 
   additionalMedia: [{
     type: { type: String, enum: ['photo', 'video'] },
     url: String
@@ -74,7 +76,7 @@ const memorialSchema = new mongoose.Schema({
     count: { type: Number, default: 0 }
   },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
-  createdBy: { type: String },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

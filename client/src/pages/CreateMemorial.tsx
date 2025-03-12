@@ -112,8 +112,8 @@ const CreateMemorial: React.FC = () => {
       const memorial = await response.json();
       
       // Navigate to the new memorial's details page
-      // navigate(`/memorial/${memorial._id}`);
-      navigate('my-memorials');
+      navigate(`/memorial/${memorial._id}`);
+      // navigate('my-memorials');
     } catch (error: any) {
       console.error('Error creating memorial:', error);
       alert(`Failed to create memorial: ${error.message}`);
@@ -128,7 +128,7 @@ const CreateMemorial: React.FC = () => {
       'pandemic': 'pandemic_disease',
       'accident': 'major_accident'
     };
-    return mapping[disasterType] || 'not_related';
+    return mapping[disasterType] || 'not_related';  
   };
 
   return (

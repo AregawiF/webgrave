@@ -1,85 +1,210 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import { Search, Scan, Filter } from 'lucide-react';
+import { MemorialDetails } from './MemorialDetails';
+import { AdminPanel } from './AdminPanel';
+import { AdvancedSearch } from '../components/AdvancedSearch';
+import { Link } from 'react-router-dom';
 
-const fetchMemorials = async ({ queryKey }) => {
-  const [, filters] = queryKey;
-  const { data } = await axios.get("http://localhost:5000/api/memorials", {
-    params: filters,
-  });
-  return data;
-};
+interface Memorial {
+  id: string;
+  name: string;
+  birthYear: string;
+  deathYear: string;
+  profileImage: string;
+  birthDate: string;
+  deathDate: string;
+  description: string;
+  isPublic: boolean;
+  mediaFiles: {
+    type: 'image' | 'video' | 'document';
+    url: string;
+    caption: string;
+  }[];
+  enableDigitalFlowers: boolean;
+  suggestedDonationAmount: number;
+  // New fields
+  causeOfDeath?: string;
+  disasterType?: string;
+  disasterName?: string;
+  disasterDate?: string;
+  nationality?: string;
+  religion?: string;
+  identityNumber?: string;
+  identityType?: string;
+}
 
 export default function MyMemorials() {
-  const [filters, setFilters] = useState({
-    search: "",
-    status: "",
-    isPublic: "",
-    page: 1,
-    limit: 10,
-  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMemorial, setSelectedMemorial] = useState<Memorial | null>(null);
+  const [memorials, setMemorials] = useState([]);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [searchCriteria, setSearchCriteria] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
-  const { data, isLoading, error } = useQuery([
-    "memorials",
-    filters,
-  ], fetchMemorials);
+  useEffect(() => {
+    const fetchMemorials = async () => {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:5000/api/memorials/my-memorials', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        method: 'GET',
+      });
 
-  const handleChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('error fetching memorials', errorData);
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Api response:', data);
+      setMemorials(data.memorials);
+      setLoading(false);
+    };
+
+    fetchMemorials();
+  }, []);
+
+  const filteredMemorials = searchQuery.toLowerCase() === 'admin pages'
+    ? []
+    : memorials.filter(memorial => {
+        if (searchCriteria) {
+          return Object.entries(searchCriteria).every(([key, value]) => {
+            if (!value) return true;
+            switch (key) {
+              case 'name':
+                return memorial.fullName.toLowerCase().includes(value.toString().toLowerCase());
+              case 'birthDate':
+                return memorial.birthDate === value;
+              case 'deathDate':
+                return memorial.deathDate === value;
+              case 'nationality':
+                return memorial.nationality.toLowerCase().includes(value.toString().toLowerCase());
+              case 'religion':
+                return memorial.religion?.toLowerCase().includes(value.toString().toLowerCase());
+              case 'primaryCause':
+                return memorial.causeOfDeath?.primaryCause.toLowerCase().includes(value.toString().toLowerCase());
+              case 'majorEvent':
+                return memorial.causeOfDeath?.majorEvent === value;
+              default:
+                return true;
+            }
+          });
+        }
+        return memorial.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               memorial._id.toLowerCase().includes(searchQuery.toLowerCase());
+      });
+
+  // Show admin panel when searching for "admin pages"
+  React.useEffect(() => {
+    setShowAdmin(searchQuery.toLowerCase() === 'admin pages');
+  }, [searchQuery]);
+
+  const handleAdvancedSearch = (criteria: any) => {
+    setSearchCriteria(criteria);
+    setShowAdvancedSearch(false);
   };
 
-  if (isLoading) return <div className="text-center py-10">Loading...</div>;
-  if (error) return <div className="text-center py-10 text-red-500">Error fetching memorials</div>;
+  if (showAdmin) {
+    return <AdminPanel />;
+  }
+
+  const formatYear = (dateString: string) => {
+    return new Date(dateString).getFullYear();
+  };
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Memorials</h1>
-      <div className="flex gap-4 mb-6">
-        <input
-          type="text"
-          name="search"
-          value={filters.search}
-          onChange={handleChange}
-          placeholder="Search..."
-          className="p-2 border rounded w-full"
-        />
-        <select name="status" value={filters.status} onChange={handleChange} className="p-2 border rounded">
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-        <select name="isPublic" value={filters.isPublic} onChange={handleChange} className="p-2 border rounded">
-          <option value="">All</option>
-          <option value="true">Public</option>
-          <option value="false">Private</option>
-        </select>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {data.memorials.map((memorial) => (
-          <div key={memorial._id} className="border rounded-lg p-4 shadow-lg">
-            <img src={memorial.mainPicture} alt={memorial.fullName} className="w-full h-56 object-cover rounded" />
-            <h2 className="text-xl font-semibold mt-4">{memorial.fullName}</h2>
-            <p className="text-gray-600">{memorial.biography.substring(0, 100)}...</p>
-            <p className="mt-2 text-sm text-gray-500">Born: {memorial.placeOfBirth}</p>
+    <div className="min-h-screen bg-memorial-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="space-y-10">
+          {/* Search Section */}
+          <div className="max-w-2xl mx-auto">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="relative flex-1 w-full">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search by name "
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="input-search"
+                />
+              </div>
+              <button 
+                onClick={() => setShowAdvancedSearch(true)}
+                className="btn-secondary w-full sm:w-auto flex items-center justify-center gap-2"
+              >
+                <Filter className="h-5 w-5" />
+                Advanced Search
+              </button>
+              <Link 
+                to="/scan-code"
+                className="btn-secondary w-full sm:w-auto flex items-center justify-center gap-2"
+              >
+                <Scan className="h-5 w-5" />
+                Scan QR Code
+              </Link>
+            </div>
           </div>
-        ))}
+
+          {/* Memorials Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredMemorials.map((memorial) => (
+              <div 
+                key={memorial._id}
+                className="memorial-card group cursor-pointer"
+                onClick={() => setSelectedMemorial(memorial)}
+              >
+                <div className="aspect-w-1 aspect-h-1 relative overflow-hidden">
+                  <img
+                    src={memorial.mainPicture}
+                    alt={memorial.fullName}
+                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                <div className="p-5">
+                  <h3 className="text-xl font-semibold text-memorial-900 mb-1 group-hover:text-indigo-600 transition-colors">
+                    {memorial.fullName}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {formatYear(memorial.birthDate)} - {formatYear(memorial.deathDate)}
+                  </p>
+                  <p className="text-gray-600 mt-2 font-mono">
+                    Digital flowers: {memorial.enableDigitalFlowers ? 'Allowed' : 'Not Allowed'}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {filteredMemorials.length === 0 && !showAdmin && (
+            <div className="text-center py-16 bg-white rounded-xl shadow-soft">
+              <p className="text-gray-500 text-lg">
+                No memorials found matching your search.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-      <div className="flex justify-center mt-6 gap-4">
-        <button
-          onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
-          disabled={filters.page === 1}
-          className="p-2 border rounded bg-blue-500 text-white disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <button
-          onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
-          disabled={filters.page >= data.totalPages}
-          className="p-2 border rounded bg-blue-500 text-white disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+
+      {selectedMemorial && (
+        <MemorialDetails
+          memorial={selectedMemorial}
+          onClose={() => setSelectedMemorial(null)}
+        />
+      )}
+
+      {showAdvancedSearch && (
+        <AdvancedSearch
+          onSearch={handleAdvancedSearch}
+          onClose={() => setShowAdvancedSearch(false)}
+        />
+      )}
     </div>
   );
 }
