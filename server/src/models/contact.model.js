@@ -13,11 +13,6 @@ const contactSchema = new mongoose.Schema({
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
   },
-  phone: {
-    type: String,
-    trim: true,
-    match: [/^\+?[1-9]\d{1,14}$/, 'Please fill a valid phone number']
-  },
   subject: {
     type: String,
     required: true,
@@ -28,11 +23,6 @@ const contactSchema = new mongoose.Schema({
     required: true,
     trim: true,
     maxlength: 1000
-  },
-  status: {
-    type: String,
-    enum: ['new', 'in-progress', 'resolved'],
-    default: 'new'
   },
   createdAt: {
     type: Date,

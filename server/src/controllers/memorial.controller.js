@@ -112,7 +112,7 @@ exports.getMemorialById = async (req, res) => {
     }
 
     // Check if memorial is public or if user is the creator
-    if (!memorial.isPublic && (!req.user || req.user._id.toString() !== memorial.createdBy._id.toString())) {
+    if (!memorial.isPublic && (req.user.userId.toString() !== memorial.createdBy.toString())) {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -134,7 +134,6 @@ exports.updateMemorial = async (req, res) => {
     }
 
     // Check if user is the creator
-    console.log(req.user.userId.toString(), memorial.createdBy.toString());
     if (req.user.userId.toString() !== memorial.createdBy.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
@@ -204,7 +203,8 @@ exports.deleteMemorial = async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    await memorial.remove();
+    // Replace memorial.remove() with deleteOne()
+    await Memorial.deleteOne({ _id: req.params.id });
     res.status(204).send();
   } catch (error) {
     console.error('Delete memorial error:', error);
@@ -229,7 +229,7 @@ exports.addTribute = async (req, res) => {
       message: req.body.message,
       amount: req.body.amount,
       isAnonymous: req.body.isAnonymous === 'true',
-      senderId: req.user._id,
+      senderId: req.user.userId,
       senderName: req.body.isAnonymous === 'true' ? 'Anonymous' : req.user.name
     };
 
@@ -255,7 +255,7 @@ exports.removeMedia = async (req, res) => {
     }
 
     // Check if user is the creator
-    if (req.user._id.toString() !== memorial.createdBy.toString()) {
+    if (req.user.userId.toString() !== memorial.createdBy.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -320,4 +320,3 @@ exports.getMyMemorials = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-

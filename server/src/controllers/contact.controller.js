@@ -4,13 +4,12 @@ const nodemailer = require('nodemailer');
 // Create a new contact form submission
 exports.submitContactForm = async (req, res) => {
   try {
-    const { name, email, phone, subject, message } = req.body;
+    const { name, email, subject, message } = req.body;
 
     // Create contact submission
     const contactSubmission = new Contact({
       name,
       email,
-      phone,
       subject,
       message
     });
@@ -27,14 +26,13 @@ exports.submitContactForm = async (req, res) => {
     });
 
     const mailOptions = {
-      from: process.env.SUPPORT_EMAIL,
+      from: email,
       to: process.env.SUPPORT_EMAIL,
       subject: `New Contact Form: ${subject}`,
       html: `
-        <h2>New Contact Form Submission</h2>
+        <h2>WebGrave New Contact Form Submission</h2>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
         <p><strong>Subject:</strong> ${subject}</p>
         <p><strong>Message:</strong> ${message}</p>
       `
@@ -56,7 +54,7 @@ exports.getContactSubmissions = async (req, res) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
 
-    const query = status ? { status } : {};
+    const query = {};
 
     const submissions = await Contact.find(query)
       .sort({ createdAt: -1 })

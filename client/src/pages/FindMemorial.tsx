@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Scan, Filter } from 'lucide-react';
-import { MemorialDetails } from './MemorialDetails';
 import { AdminPanel } from './AdminPanel';
 import { AdvancedSearch } from '../components/AdvancedSearch';
 import { Link, useNavigate } from 'react-router-dom';
@@ -277,13 +276,6 @@ export default function FindMemorial() {
           )}
         </div>
       </div>
-
-      {selectedMemorial && (
-        <MemorialDetails
-          memorial={selectedMemorial}
-          onClose={() => setSelectedMemorial(null)}
-        />
-      )}
 
       {showAdvancedSearch && (
         <AdvancedSearch

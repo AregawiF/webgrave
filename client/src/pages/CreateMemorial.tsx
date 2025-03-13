@@ -70,20 +70,6 @@ const CreateMemorial: React.FC = () => {
       formData.append('causeOfDeath', JSON.stringify(causeOfDeath));
 
 
-      // const user = localStorage.getItem('user'); // Get stored user data as a string
-
-      // if (user) {
-      //   const parsedUser = JSON.parse(user); // Parse it to an object
-      //   if (parsedUser.email) {
-      //     formData.append('createdBy', parsedUser.email); // Append email if it exists
-      //   } else {
-      //     console.error("User email not found in local storage.");
-      //   }
-      // } else {
-      //   console.error("User not found in local storage.");
-      // }
-
-
       // Handle additional media files
       if (data.mediaFiles && data.mediaFiles.length) {
         // Process each media file (download from object URL and append to form)
