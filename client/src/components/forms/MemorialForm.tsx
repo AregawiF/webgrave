@@ -91,6 +91,10 @@ export function MemorialForm({ onSubmit }: Props) {
   const handlePaymentComplete = (paymentSuccess: boolean) => {
     if (paymentSuccess) {
       onSubmit(formData);
+    } else {
+      setErrors({
+        payment: 'Payment failed'
+      });
     }
     setShowPayment(false);
   };
@@ -187,7 +191,7 @@ export function MemorialForm({ onSubmit }: Props) {
       {/* Basic Information */}
       <div>
         <label className="block text-sm font-medium text-gray-700">
-          Full Name
+          Full Name <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -208,7 +212,7 @@ export function MemorialForm({ onSubmit }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Birth Date
+            Birth Date <span className="text-red-500">*</span>
           </label>
           <div className="mt-1 relative">
             <input
@@ -240,7 +244,7 @@ export function MemorialForm({ onSubmit }: Props) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Place of Birth
+            Place of Birth <span className="text-red-500">*</span>
           </label>
           <div className="mt-1 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -266,7 +270,7 @@ export function MemorialForm({ onSubmit }: Props) {
       {/* Death Date */}
       <div>
         <label className="block text-sm font-medium text-gray-700">
-          Death Date
+          Death Date <span className="text-red-500">*</span>
         </label>
         <input
           type="date"
@@ -338,7 +342,7 @@ export function MemorialForm({ onSubmit }: Props) {
       {/* Description */}
       <div>
         <label className="block text-sm font-medium text-gray-700">
-          Description
+          Bio <span className="text-red-500">*</span>
         </label>
         <textarea
           rows={4}
@@ -486,7 +490,11 @@ export function MemorialForm({ onSubmit }: Props) {
           Make this memorial public
         </label>
       </div>
-
+      
+      {errors.payment && (
+        <p className="mt-1 text-sm text-red-600 flex items-center">
+          <AlertCircle className="h-4 w-4 mr-1" />
+          {errors.payment}</p>)}
       {/* Submit Button */}
       <button
         type="submit"
@@ -502,6 +510,7 @@ export function MemorialForm({ onSubmit }: Props) {
           onClose={() => setShowPayment(false)}
         />
       )}
+      
     </form>
   );
 }

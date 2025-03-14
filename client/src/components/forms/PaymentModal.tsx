@@ -1,7 +1,10 @@
 import { CreditCard, X } from 'lucide-react';
-import { PayPalScriptProvider } from "@paypal/react-paypal-js";
-import Checkout from './Checkout';
-const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import StripeCheckout from './StripeCheckout';
+
+// Replace with your actual Stripe publishable key from environment variables
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 interface Props {
   amount: number;
@@ -42,17 +45,13 @@ export function PaymentModal({ amount, onComplete, onClose }: Props) {
             </ul>
           </div>
 
-          <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID }}>
-            <Checkout onSuccess={() => onComplete(true)} />
-          </PayPalScriptProvider>
+          <div className="border border-gray-300 rounded-lg p-4">
+            <Elements stripe={stripePromise}>
+              <StripeCheckout amount={amount} onSuccess={() => onComplete(true)} onFailure={() => onComplete(false)} />
+            </Elements>
+          </div>
 
           <div className="space-y-3">
-            {/* <button
-              onClick={() => onComplete(true)}
-              className="w-full btn-primary"
-            >
-              Proceed (Demo)
-            </button> */}
             <button
               onClick={onClose}
               className="w-full btn-secondary"
