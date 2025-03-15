@@ -16,20 +16,6 @@ const flowerSchema = new mongoose.Schema({
     required: true,
     min: 1
   },
-  message: {
-    type: String,
-    maxlength: 500
-  },
-  paymentMethod: {
-    type: String,
-    enum: ['stripe', 'paypal'],
-    required: true
-  },
-  paymentStatus: {
-    type: String,
-    enum: ['pending', 'completed', 'failed'],
-    default: 'pending'
-  },
   transactionId: {
     type: String,
     unique: true

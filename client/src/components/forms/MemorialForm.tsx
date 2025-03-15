@@ -4,13 +4,12 @@ import { PersonalInfoSection } from './sections/PersonalInfoSection';
 import { EducationSection } from './sections/EducationSection';
 import { FamilyMembersSection } from './sections/FamilyMembersSection';
 import { MilitaryServiceSection } from './sections/MilitaryServiceSection';
-import { PaymentModal } from './PaymentModal';
 import { CauseOfDeathSection } from './sections/CauseOfDeathSection';
 
 
 interface Props {
   onSubmit: (data: any) => void;
-}
+} 
 
 export function MemorialForm({ onSubmit }: Props) {
   const [formData, setFormData] = useState({
@@ -96,23 +95,9 @@ export function MemorialForm({ onSubmit }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('handle submit function called');
     if (validate()) {
       onSubmit(formData);
-      // handleStripeCheckout();
-      // setShowPayment(true);
     }
-  };
-
-  const handlePaymentComplete = (paymentSuccess: boolean) => {
-    if (paymentSuccess) {
-      onSubmit(formData);
-    } else {
-      setErrors({
-        payment: 'Payment failed'
-      });
-    }
-    setShowPayment(false);
   };
 
   const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -518,14 +503,6 @@ export function MemorialForm({ onSubmit }: Props) {
       >
         Create Memorial
       </button>
-      {/* Payment Modal */}
-      {showPayment && (
-        <PaymentModal
-          amount={20}
-          onComplete={handlePaymentComplete}
-          onClose={() => setShowPayment(false)}
-        />
-      )}
       
     </form>
   );

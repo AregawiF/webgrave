@@ -19,7 +19,7 @@ const CreateMemorial: React.FC = () => {
         body: JSON.stringify({ amount }),
       });
 
-      if (!response.ok) {
+      if (!response.ok) { 
         throw new Error('Failed to initiate Stripe checkout');
       }
 
@@ -31,104 +31,56 @@ const CreateMemorial: React.FC = () => {
     }
   };
 
+  // Helper function to convert file URLs to base64
+  const fileToBase64 = async (url: string): Promise<string> => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error converting file to base64:', error);
+      throw error;
+    }
+  };
+
   const handleMemorialSubmit = async (data: any) => {
     try {
       const token = localStorage.getItem('authToken');
       
-      // Create FormData object for multipart/form-data submission (required for file uploads)
-      const formData = new FormData();
+      // Create a copy of the data for localStorage
+      const localStorageData: any = { ...data };
       
-      // Add the main picture - required by backend
+      // Convert main picture to base64 for localStorage
       if (data.profileImage) {
-        const mainPictureFile = await fetch(data.profileImage).then(r => r.blob());
-        formData.append('mainPicture', mainPictureFile, 'profile.jpg');
+        localStorageData.profileImage = await fileToBase64(data.profileImage);
       }
       
-      // Add basic memorial information
-      formData.append('fullName', data.name);
-      formData.append('birthDate', data.birthDate);
-      formData.append('placeOfBirth', data.birthPlace);
-      formData.append('deathDate', data.deathDate);
-      formData.append('biography', data.description);
-      
-      // Service information
-      if (data.serviceDate) formData.append('serviceDate', data.serviceDate);
-      if (data.serviceLocation) formData.append('serviceLocation', data.serviceLocation);
-      if (data.serviceDetails) formData.append('serviceDetails', data.serviceDetails);
-
-      // Identity information - required by backend
-      formData.append('identityType', data.identityType || 'national_id');
-      formData.append('identityNumber', data.identityNumber || '00000000');
-      formData.append('nationality', data.nationality || 'Unknown');
-      
-      // Optional fields
-      if (data.nickname) formData.append('nickName', data.nickname);
-      if (data.maidenName) formData.append('maidenName', data.maidenName);
-      if (data.religion) formData.append('religion', data.religion);
-      if (data.favoriteQuote) formData.append('favoriteQuote', data.favoriteQuote);
-      
-      // Boolean fields
-      formData.append('birthdayReminder', String(data.enableBirthDateReminder));
-      formData.append('militaryService', String(!!data.militaryService));
-      formData.append('enableDigitalFlowers', String(data.enableDigitalFlowers));
-      formData.append('isPublic', String(data.isPublic));
-      
-      // Array fields - must be stringified for backend
-      if (data.languages && data.languages.length) {
-        formData.append('languagesSpoken', JSON.stringify(data.languages));
+      // Convert media files to base64 for localStorage
+      if (data.mediaFiles && data.mediaFiles.length > 0) {
+        const mediaFilesPromises = data.mediaFiles.map(async (file: any) => ({
+          ...file,
+          url: await fileToBase64(file.url)
+        }));
+        
+        localStorageData.mediaFiles = await Promise.all(mediaFilesPromises);
       }
       
-      // Education - must be stringified arrays of objects
-      if (data.education && data.education.length) {
-        formData.append('education', JSON.stringify(data.education));
-      }
+      // Store in localStorage
+      localStorage.setItem('memorialFormData', JSON.stringify(localStorageData));
       
-      // Family members - must be stringified arrays of objects
-      if (data.familyMembers && data.familyMembers.length) {
-        formData.append('familyMembers', JSON.stringify(data.familyMembers));
-      }
-      
-      // Cause of death - must be structured as an object
-      const causeOfDeath = {
-        primaryCause: data.causeOfDeath,
-        majorEvent: data.disasterType ? mapDisasterTypeToBackend(data.disasterType) : 'not_related'
-      };
-      formData.append('causeOfDeath', JSON.stringify(causeOfDeath));
-
-
-      // Handle additional media files
-      if (data.mediaFiles && data.mediaFiles.length) {
-        // Process each media file (download from object URL and append to form)
-        for (let i = 0; i < data.mediaFiles.length; i++) {
-          const file = data.mediaFiles[i];
-          const mediaFile = await fetch(file.url).then(r => r.blob());
-          formData.append('additionalMedia', mediaFile, `media_${i}.${file.type === 'image' ? 'jpg' : 'mp4'}`);
-        }
-      }
-
-      
-      const formDataObject: any = {};
-      formData.forEach((value, key) => {
-        formDataObject[key] = value;
-      });
-      localStorage.setItem('memorialFormData', JSON.stringify(formDataObject));
+      // Continue with payment
       handleStripeCheckout();
       
     } catch (error: any) {
       console.error('Error creating memorial:', error);
       alert(`Failed to create memorial: ${error.message}`);
     }
-  };
-  
-  // Helper function to map frontend disaster types to backend enum values
-  const mapDisasterTypeToBackend = (disasterType: string): string => {
-    const mapping: {[key: string]: string} = {
-      'war': 'war_conflict',
-      'natural': 'natural_disaster',
-      'pandemic': 'pandemic_disease',
-      'accident': 'major_accident'
-    };
-    return mapping[disasterType] || 'not_related';  
   };
 
   return (
