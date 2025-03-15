@@ -14,11 +14,6 @@ const AboutUs: React.FC = () => {
       description: "Unique QR codes connect physical memorial sites to rich digital content, allowing visitors to learn more about your loved ones."
     },
     {
-      icon: Users,
-      title: "Connect Families",
-      description: "Our family connection feature helps preserve genealogical information and connects related memorials automatically."
-    },
-    {
       icon: Shield,
       title: "Secure & Private",
       description: "Advanced privacy controls ensure sensitive information is only visible to authorized family members."
@@ -59,32 +54,6 @@ const AboutUs: React.FC = () => {
             WebGrave is more than a platform. It's a digital sanctuary where memories live forever.
           </p>
         </div>
-
-        {/* <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12">
-          <div className="bg-white shadow-lg rounded-lg p-8 text-center">
-            <Heart className="mx-auto h-12 w-12 text-primary-600 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">Our Mission</h3>
-            <p className="text-gray-600">
-              To create a compassionate digital space that celebrates life stories, preserves memories, and provides comfort to those grieving.
-            </p>
-          </div>
-
-          <div className="bg-white shadow-lg rounded-lg p-8 text-center">
-            <Globe className="mx-auto h-12 w-12 text-primary-600 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">Global Remembrance</h3>
-            <p className="text-gray-600">
-              Connect with loved ones across the world, share stories, and keep memories alive through our intuitive digital memorial platform.
-            </p>
-          </div>
-
-          <div className="bg-white shadow-lg rounded-lg p-8 text-center">
-            <Users className="mx-auto h-12 w-12 text-primary-600 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">Community Support</h3>
-            <p className="text-gray-600">
-              Build a supportive community around memories, share tributes, and find solace in collective remembrance.
-            </p>
-          </div>
-        </div> */}
 
         {/* Benefits */}
         <div>

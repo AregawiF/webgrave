@@ -24,7 +24,7 @@ export function MemorialForm({ onSubmit }: Props) {
     description: '',
     profileImage: null,
     isPublic: true,
-    enableDigitalFlowers: false,
+    enableDigitalFlowers: true,
     suggestedDonationAmount: 5,
     enableBirthDateReminder: false,
     nickname: '',
@@ -51,6 +51,7 @@ export function MemorialForm({ onSubmit }: Props) {
     identityNumber: ''
   });
   const [showPayment, setShowPayment] = useState(false);
+  const [amount, setAmount] = useState(20);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
@@ -81,10 +82,25 @@ export function MemorialForm({ onSubmit }: Props) {
     return Object.keys(newErrors).length === 0;
   };
 
+  // const handleStripeCheckout = async () => {
+  //   const response = await fetch("http://localhost:5000/api/payment/create-stripe-payment", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({ amount }),
+  //   });
+
+  //   const { url } = await response.json();
+  //   window.location.href = url; // Redirect to Stripe Checkout
+  // };
+
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('handle submit function called');
     if (validate()) {
-      setShowPayment(true);
+      onSubmit(formData);
+      // handleStripeCheckout();
+      // setShowPayment(true);
     }
   };
 

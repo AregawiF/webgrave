@@ -61,28 +61,50 @@
 // }
 
 
-// const axios = require("axios");
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// Existing PayPal code can remain if you want to keep it as an option
-
-// Add new Stripe payment endpoints
 exports.createStripePayment = async (req, res) => {
   try {
-    const { amount, currency = 'usd' } = req.body;
-    
-    // Create a PaymentIntent with the order amount and currency
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // convert to cents
-      currency: currency,
-      // Verify your integration in this guide by including this parameter
-      metadata: { integration_check: 'accept_a_payment' },
+   const { amount } = req.body; // Get dynamic amount from frontend
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: { name: "Create Memorial" },
+            unit_amount: amount * 100, // Convert to cents    
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `http://localhost:5173/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://localhost:5173/payment/cancel`,
     });
 
-    // Send the client secret to the client
-    res.json({ clientSecret: paymentIntent.client_secret });
+    res.json({ url: session.url }); // Send Stripe checkout URL to frontend
   } catch (error) {
-    console.error('Error creating payment intent:', error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+
+// New endpoint to verify the payment 
+exports.verifyPayment = async (req, res) => {
+  const { sessionId } = req.body; // Or req.query if you prefer
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.payment_status === 'paid') {
+      res.status(200).json({ success: true, message: 'Payment successful' });
+    } else {
+      res.status(400).json({ success: false, message: 'Payment not successful' });
+    }
+  } catch (error) {
+    console.error("Error verifying payment:", error);
+    res.status(500).json({ success: false, message: 'Failed to verify payment' });
   }
 };

@@ -5,6 +5,32 @@ import { useNavigate } from 'react-router-dom';
 const CreateMemorial: React.FC = () => {
   const navigate = useNavigate();
 
+    const handleStripeCheckout = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+
+      const amount = 20; 
+      const response = await fetch("http://localhost:5000/api/payment/create-stripe-payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // Pass the auth token here too if needed
+        },
+        body: JSON.stringify({ amount }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to initiate Stripe checkout');
+      }
+
+      const { url } = await response.json();
+      window.location.href = url; // Redirect to Stripe Checkout
+    } catch (error: any) {
+      console.error('Error initiating Stripe checkout:', error);
+      alert(`Failed to initiate payment: ${error.message}`);
+    }
+  };
+
   const handleMemorialSubmit = async (data: any) => {
     try {
       const token = localStorage.getItem('authToken');
@@ -80,26 +106,14 @@ const CreateMemorial: React.FC = () => {
         }
       }
 
-      console.log("submitted data", formData);
-      // Make the API request
-      const response = await fetch('http://localhost:5000/api/memorials', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create memorial');
-      }
-
-      const memorial = await response.json();
       
-      // Navigate to the new memorial's details page
-      navigate(`/memorial/${memorial._id}`);
-      // navigate('my-memorials');
+      const formDataObject: any = {};
+      formData.forEach((value, key) => {
+        formDataObject[key] = value;
+      });
+      localStorage.setItem('memorialFormData', JSON.stringify(formDataObject));
+      handleStripeCheckout();
+      
     } catch (error: any) {
       console.error('Error creating memorial:', error);
       alert(`Failed to create memorial: ${error.message}`);

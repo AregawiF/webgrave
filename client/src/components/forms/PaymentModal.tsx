@@ -40,7 +40,6 @@ export function PaymentModal({ amount, onComplete, onClose }: Props) {
               <li>• Permanent digital memorial page</li>
               <li>• Custom QR code for physical memorials</li>
               <li>• Photo and video gallery</li>
-              <li>• Family connections feature</li>
               <li>• Digital flower tributes</li>
             </ul>
           </div>
