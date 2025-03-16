@@ -133,8 +133,10 @@ exports.updateMemorial = async (req, res) => {
       return res.status(404).json({ message: 'Memorial not found' });
     }
 
+    console.log('user role:', req.user.role);
+
     // Check if user is the creator
-    if (req.user.userId.toString() !== memorial.createdBy.toString()) {
+    if (req.user.userId.toString() !== memorial.createdBy.toString() && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -199,7 +201,7 @@ exports.deleteMemorial = async (req, res) => {
     }
 
     // Check if user is the creator
-    if (req.user.userId.toString() !== memorial.createdBy.toString()) {
+    if (req.user.userId.toString() !== memorial.createdBy.toString() && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -255,7 +257,7 @@ exports.removeMedia = async (req, res) => {
     }
 
     // Check if user is the creator
-    if (req.user.userId.toString() !== memorial.createdBy.toString()) {
+    if (req.user.userId.toString() !== memorial.createdBy.toString() && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
 

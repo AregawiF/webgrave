@@ -32,7 +32,7 @@ exports.signup = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -44,6 +44,7 @@ exports.signup = async (req, res) => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        role: user.role,
       }
     });
   } catch (error) {
@@ -81,7 +82,7 @@ exports.login = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -93,6 +94,7 @@ exports.login = async (req, res) => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        role: user.role,
       }
     });
   } catch (error) {
@@ -119,3 +121,21 @@ exports.getProfile = async (req, res) => {
     });
   }
 };
+
+// delete profile
+exports.deleteProfile = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Delete profile had errors:', error); // Detailed error logging
+    res.status(500).json({ 
+      message: 'Error deleting profile',
+      error: error.message 
+    });
+  }
+};
+

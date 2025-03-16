@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, PlusCircle, Search, MessageCircle, 
@@ -20,6 +19,24 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, handleLogout }) => {
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user has admin role
+  useEffect(() => {
+    if (isAuthenticated) {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setIsAdmin(user.role === 'admin');
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+        }
+      }
+    } else {
+      setIsAdmin(false);
+    }
+  }, [isAuthenticated]);
 
   const isActive = (path: string) => 
     location.pathname === path 
@@ -53,6 +70,11 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, handleLogout }) => {
               <Link to="/my-memorials" className={`flex items-center ${isActive('/my-memorials')}`}>
                 <Folder className="mr-2 h-5 w-5" /> My Memorials
               </Link>
+              {isAdmin && (
+                <Link to="/admin" className={`flex items-center ${isActive('/admin')}`}>
+                  <User className="mr-2 h-5 w-5" /> Admin Dashboard
+                </Link>
+              )}
             </>
           )}
 
@@ -116,6 +138,11 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, handleLogout }) => {
               <Link to="/my-memorials" onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center my-4 pb-2`}>
                 My Memorials
               </Link>
+              {isAdmin && (
+                <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center my-4 pb-2`}>
+                  Admin Dashboard
+                </Link>
+              )}
             </>
           )}
 

@@ -20,6 +20,8 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
 import FlowerPaymentSuccess from './pages/FlowerPaymentSuccess';
 import FlowerPaymentCancel from './pages/FlowerPaymentCancel';
+import AdminPanel from './pages/AdminPanel';
+import AdminRoute from './components/AdminRoute';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -104,6 +106,14 @@ const App: React.FC = () => {
                 <PrivateRoute>
                   <EditMemorial />
                 </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <AdminRoute>
+                  <AdminPanel />
+                </AdminRoute>
               } 
             />
             <Route path="*" element={<NotFound />} />
