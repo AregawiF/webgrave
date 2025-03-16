@@ -24,9 +24,7 @@ const tributeSchema = new mongoose.Schema({
   message: String,
   amount: { type: Number, required: true },
   date: { type: Date, default: Date.now },
-  isAnonymous: { type: Boolean, default: false },
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  senderName: String
 });
 
 const causeOfDeathSchema = new mongoose.Schema({

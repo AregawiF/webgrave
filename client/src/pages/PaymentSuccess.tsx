@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const PaymentSuccess = () => {
@@ -6,6 +6,7 @@ const PaymentSuccess = () => {
   const sessionId = searchParams.get('session_id');
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(true);
 
   // Convert base64 string to Blob for file upload
   const base64ToBlob = async (base64String: string): Promise<Blob> => {
@@ -25,6 +26,27 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     if (sessionId) {
+      // Check if we already processed this session
+      const processedSessions = JSON.parse(localStorage.getItem('processedPaymentSessions') || '[]');
+      
+      if (processedSessions.includes(sessionId)) {
+        console.log('This session was already processed, skipping memorial creation');
+        setIsProcessing(false);
+        
+        // Try to get memorial ID if we saved it
+        const createdMemorialId = localStorage.getItem(`memorial_for_session_${sessionId}`);
+        if (createdMemorialId) {
+          navigate(`/memorial/${createdMemorialId}`);
+        } else {
+          navigate('/my-memorials');
+        }
+        return;
+      }
+
+      // Mark this session as processed IMMEDIATELY to prevent duplicate processing
+      const updatedProcessedSessions = [...processedSessions, sessionId];
+      localStorage.setItem('processedPaymentSessions', JSON.stringify(updatedProcessedSessions));
+
       const verifyPayment = async () => {
         try {
           const token = localStorage.getItem('authToken');
@@ -137,23 +159,31 @@ const PaymentSuccess = () => {
 
             const memorial = await createResponse.json();
             
-            // Clean up localStorage
+            // Session is already marked as processed at the beginning of the effect
+            // Save the memorial ID associated with this session
+            localStorage.setItem(`memorial_for_session_${sessionId}`, memorial._id);
+            
+            // Clean up form data
             localStorage.removeItem('memorialFormData');
             
             // Navigate to the new memorial's details page
+            setIsProcessing(false);
             navigate(`/memorial/${memorial._id}`);
           } else {
             setErrorMessage(data.message || 'Payment verification failed.');
+            setIsProcessing(false);
           }
         } catch (error: any) {
           console.error('Error verifying payment and creating memorial:', error);
           setErrorMessage(error.message || 'An error occurred during payment verification.');
+          setIsProcessing(false);
         }
       };
 
       verifyPayment();
     } else {
       setErrorMessage('Session ID not found.');
+      setIsProcessing(false);
     }
   }, [sessionId, navigate]);
 
@@ -170,17 +200,42 @@ const PaymentSuccess = () => {
 
   if (errorMessage) {
     return (
-      <div className='text-center mt-16'>
-        <h1>Payment Verification Failed</h1>
-        <p>{errorMessage}</p>
+      <div className='text-center mt-16 p-4'>
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Payment Verification Failed</h1>
+          <p className="text-gray-700 mb-4">{errorMessage}</p>
+          <button
+            onClick={() => navigate('/my-memorials')}
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors"
+          >
+            View My Memorials
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className='text-center mt-16'>
-      <h1 className='text-2xl font-bold mb-4'>Processing Payment...</h1>
-      <p>Please wait, you will be redirected shortly.</p>
+    <div className='text-center mt-16 p-4'>
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 className='text-2xl font-bold mb-4'>{isProcessing ? 'Processing Payment...' : 'Payment Successful'}</h1>
+        {isProcessing ? (
+          <div>
+            <p className="mb-4">Please wait, you will be redirected shortly.</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
+          </div>
+        ) : (
+          <div>
+            <p className="text-green-600 mb-4">Your memorial has been created successfully!</p>
+            <button
+              onClick={() => navigate('/my-memorials')}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors"
+            >
+              View My Memorials
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -18,6 +18,8 @@ import Footer from './components/Footer';
 import MyMemorials from './pages/MyMemorials';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
+import FlowerPaymentSuccess from './pages/FlowerPaymentSuccess';
+import FlowerPaymentCancel from './pages/FlowerPaymentCancel';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -69,6 +71,8 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="/payment/cancel" element={<PaymentCancel />} />
+            <Route path="/flower-payment/success" element={<FlowerPaymentSuccess />} />
+            <Route path="/flower-payment/cancel" element={<FlowerPaymentCancel />} />
             <Route 
               path="/memorial/:id" 
               element={<MemorialDetailsPage />} 

@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const flowerSchema = new mongoose.Schema({
-  memorial: {
+  memorialId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Memorial',
     required: true
   },
-  sender: {
+  senderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: false  // Allow anonymous tributes
@@ -15,6 +15,10 @@ const flowerSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 1
+  },
+  message: {
+    type: String,
+    required: true
   },
   transactionId: {
     type: String,
@@ -26,4 +30,5 @@ const flowerSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Flower', flowerSchema);
+const Flower = mongoose.model('Flower', flowerSchema); 
+module.exports = Flower;

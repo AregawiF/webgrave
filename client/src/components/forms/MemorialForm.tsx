@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, Upload, Flower2, DollarSign, X, Bell, MapPin, Briefcase, UserCircle, Mail, Phone, Calendar, CreditCard, GraduationCap, Medal, Users, Skull } from 'lucide-react';
+import { AlertCircle, Upload, Flower2, X, Bell, MapPin, Briefcase, UserCircle, Mail, Phone, Calendar, GraduationCap, Medal, Users, Skull } from 'lucide-react';
 import { PersonalInfoSection } from './sections/PersonalInfoSection';
 import { EducationSection } from './sections/EducationSection';
 import { FamilyMembersSection } from './sections/FamilyMembersSection';
@@ -49,7 +49,6 @@ export function MemorialForm({ onSubmit }: Props) {
     identityType: '',
     identityNumber: ''
   });
-  const [showPayment, setShowPayment] = useState(false);
   const [amount, setAmount] = useState(20);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -412,7 +411,13 @@ export function MemorialForm({ onSubmit }: Props) {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {formData.mediaFiles.map((file, index) => (
             <div key={index} className="relative group">
-              {file.type === 'image' ? (
+              {file.type === 'video' ? (
+                <video
+                  src={file.url}
+                  controls
+                  className="h-32 w-full object-cover rounded-lg"
+                />
+              ) : file.type === 'image' ? (
                 <img
                   src={file.url}
                   alt="Memorial media"
@@ -420,9 +425,10 @@ export function MemorialForm({ onSubmit }: Props) {
                 />
               ) : (
                 <div className="h-32 w-full flex items-center justify-center bg-gray-100 rounded-lg">
-                  <span className="text-gray-500">{file.type}</span>
+                  <span className="text-gray-500">Document</span>
                 </div>
               )}
+
               <button
                 type="button"
                 onClick={() => removeFile(index)}

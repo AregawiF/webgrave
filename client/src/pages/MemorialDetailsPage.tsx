@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Globe, Heart, Download, Flower2, X, MapPin, Book, Flag, CreditCard, Briefcase, GraduationCap, Medal, Users, Minus, Plus, Edit, Trash2 } from 'lucide-react';
+import { Calendar, Globe, Heart, Download, Flower2, X, MapPin, Book, Flag, CreditCard, Briefcase, GraduationCap, Medal, Users, Minus, Plus, Edit, Trash2, MessageSquare } from 'lucide-react';
 import QRCode from 'qrcode.react';
-import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useParams, useNavigate, useLocation } from 'react-router-dom'; 
 
 interface MediaFile {
     type: 'photo' | 'video';
@@ -21,10 +21,10 @@ interface MemorialDetails {
     suggestedDonationAmount: number;
     identityNumber?: string;
     identityType?: string;
-    nickname?: string; // Consistent naming
+    nickname?: string; 
     maidenName?: string;
     nationality?: string;
-    languages?: string[]; // Consistent naming
+    languages?: string[]; 
     religion?: string;
     education?: {
         institution: string;
@@ -45,11 +45,11 @@ interface MemorialDetails {
         isLiving: boolean;
     }[];
     createdBy: string;
-    causeOfDeath?: {  // Include causeOfDeath
+    causeOfDeath?: {  
         primaryCause: string;
         majorEvent: string;
-        eventName?: string;  // Optional fields
-        eventDate?: string; // Optional fields
+        eventName?: string;  
+        eventDate?: string; 
     };
      placeOfBirth: string;
      serviceDate?: string;
@@ -67,60 +67,56 @@ export default function MemorialDetailsPage() {
     const [memorial, setMemorial] = useState<MemorialDetails | null>(null);
     const [activeTab, setActiveTab] = useState<'about' | 'family' | 'career' | 'gallery'>('about');
     const [donation, setDonation] = useState(5);
+    const [tributeMessage, setTributeMessage] = useState('');
     const [loading, setLoading] = useState(true);
+    const [sending, setSending] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate(); // For redirection after delete
+    const navigate = useNavigate(); 
+    const location = useLocation();
 
     const [isEditing, setIsEditing] = useState(false);
     const [editedMemorial, setEditedMemorial] = useState<MemorialDetails | null>(null);
     const [mainPicturePreview, setMainPicturePreview] = useState<string | null>(null);
     const [additionalMediaPreviews, setAdditionalMediaPreviews] = useState<string[]>([]);
 
+    const fetchMemorial = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`http://localhost:5000/api/memorials/${id}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch memorial: ${response.status} ${response.statusText}`);
+            }
+            const data = await response.json();
+            const parsedData: MemorialDetails = {
+                ...data,
+                languages: data.languagesSpoken ? data.languagesSpoken : [],
+                education: data.education ? data.education : [],
+                familyMembers: data.familyMembers ? data.familyMembers : [],
+                additionalMedia: data.additionalMedia ? data.additionalMedia : [],
+                tributes: data.tributes ? data.tributes : [],
+            };
+            setMemorial(parsedData);
+            setEditedMemorial(parsedData);
+            setMainPicturePreview(parsedData.mainPicture);
+            setAdditionalMediaPreviews(parsedData.additionalMedia.map(media => media.url));
+        } catch (err: any) {
+            setError(err.message || 'An unknown error occurred');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchMemorial = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await fetch(`http://localhost:5000/api/memorials/${id}`);
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch memorial: ${response.status} ${response.statusText}`);
-                }
-                const data = await response.json();
-                // Parse stringified data back into objects
-                const parsedData: MemorialDetails = {
-                    ...data,
-                    languages: data.languagesSpoken ? data.languagesSpoken : [],
-                    education: data.education ? data.education : [],
-                    familyMembers: data.familyMembers ? data.familyMembers : [],
-                    additionalMedia: data.additionalMedia ?  data.additionalMedia : [],
-                    causeOfDeath: data.causeOfDeath ?  data.causeOfDeath : { primaryCause: '', majorEvent: ''},
-                    tributes: data.tributes ? data.tributes : [],
-                };
-                setMemorial(parsedData);
-                 setMainPicturePreview(parsedData.mainPicture); // Set initial preview
-                 setAdditionalMediaPreviews(parsedData.additionalMedia.map(media => media.url));
-
-
-            } catch (err: any) {
-                setError(err.message || 'An unknown error occurred');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (id) {
-            fetchMemorial();
-        }
+        fetchMemorial();
     }, [id]);
 
-
-    const user = localStorage.getItem('user'); // Get stored user data as a string
+    const user = localStorage.getItem('user'); 
     let loggedUserId = '';
 
     if (user) {
-      const parsedUser = JSON.parse(user); // Parse it to an object
+      const parsedUser = JSON.parse(user); 
 
       if (parsedUser.id) {
         loggedUserId = parsedUser.id;
@@ -139,9 +135,9 @@ export default function MemorialDetailsPage() {
         const copy: MemorialDetails = {
             ...memorial,
              languages: memorial.languages ? [...memorial.languages] : [],
-            education: memorial.education ? memorial.education.map(edu => ({ ...edu })) : [],  // Deep copy
-            familyMembers: memorial.familyMembers ? memorial.familyMembers.map(member => ({ ...member })) : [], // Deep copy
-            additionalMedia: memorial.additionalMedia ? memorial.additionalMedia.map(media => ({ ...media })) : [], // Deep copy
+            education: memorial.education ? memorial.education.map(edu => ({ ...edu })) : [],  
+            familyMembers: memorial.familyMembers ? memorial.familyMembers.map(member => ({ ...member })) : [], 
+            additionalMedia: memorial.additionalMedia ? memorial.additionalMedia.map(media => ({ ...media })) : [], 
             causeOfDeath: memorial.causeOfDeath ? { ...memorial.causeOfDeath } : { primaryCause: '', majorEvent: '' },
             tributes: memorial.tributes ? memorial.tributes.map((tribute) => ({...tribute})) : [],
         };
@@ -186,226 +182,129 @@ export default function MemorialDetailsPage() {
         if (fieldName === 'mainPicture') {
             return { ...prev, mainPicture: file };
         } else {
-            // For additionalMedia, we'll store *new* files.  Existing URLs are handled separately.
             const newMedia = { type: file.type.startsWith('image') ? 'photo' : 'video', file };
             return { ...prev, additionalMedia: [...(prev.additionalMedia || []), newMedia] };
         }
     });
 };
 
-
-
-//   const handleSave = async () => {
-//     if (!editedMemorial) return;
-
-//     try {
-//         const formData = new FormData();
-
-//         // Append all the changed fields, handling arrays and objects correctly.
-//         for (const key in editedMemorial) {
-//             if (editedMemorial.hasOwnProperty(key)) {
-//                 const value = (editedMemorial as any)[key];
-
-//                 if (value instanceof File) {
-//                     formData.append(key, value);
-//                 } else if (Array.isArray(value)) {
-//                     // Handle additionalMedia specially
-//                     if (key === 'additionalMedia') {
-//                         value.forEach((mediaItem: any, index: number) => {
-//                             if (mediaItem.file) {
-//                                 // New file: append it
-//                                 formData.append(`additionalMedia[${index}]`, mediaItem.file);
-//                             } else if (mediaItem.url) {
-//                                 // Existing URL: send as a stringified object (your backend will need to handle this).
-//                                 formData.append(`additionalMedia[${index}]`, JSON.stringify({ type: mediaItem.type, url: mediaItem.url }));
-//                             }
-//                         });
-//                     }
-//                      else {
-//                          formData.append(key, JSON.stringify(value));
-//                     }
-
-//                 }else if (key === 'causeOfDeath' && typeof value === 'object' && value !== null) {
-//                     formData.append(key, JSON.stringify(value));
-//                 }
-
-//                  else if (key === 'birthDate' || key === 'deathDate') {
-//                     formData.append(key, new Date(value).toISOString());
-//                 }
-//                 else if(key !== 'tributes' && key !== 'totalTributes') {  // likely don't need to send these
-//                     formData.append(key, String(value));
-//                 }
-//             }
-//         }
-
-//         const token = localStorage.getItem('authToken');
-//         if (!token) {
-//             throw new Error('No auth token found');
-//         }
-
-//         const response = await fetch(`http://localhost:5000/api/memorials/${id}`, {
-//             method: 'PUT',
-//             body: formData, // Use FormData for file uploads
-//             headers: {
-//               'Authorization': `Bearer ${token}`
-//             },
-//         });
-
-//         if (!response.ok) {
-//             throw new Error(`Failed to update memorial: ${response.status} ${response.statusText}`);
-//         }
-
-//         const updatedData = await response.json();
-//          const parsedData: MemorialDetails = {
-//                     ...updatedData,
-//                     languages: updatedData.languagesSpoken ? updatedData.languagesSpoken : [],
-//                     education: updatedData.education ? updatedData.education : [],
-//                     familyMembers: updatedData.familyMembers ? updatedData.familyMembers : [],
-//                     additionalMedia: updatedData.additionalMedia ?  updatedData.additionalMedia : [],
-//                     causeOfDeath: updatedData.causeOfDeath ?  updatedData.causeOfDeath : { primaryCause: '', majorEvent: ''},
-//                      tributes: updatedData.tributes ? updatedData.tributes : [],
-//                 };
-//         setMemorial(parsedData); // Update the main memorial state
-//         setIsEditing(false);
-//         setMainPicturePreview(parsedData.mainPicture);
-//          setAdditionalMediaPreviews(parsedData.additionalMedia.map(media => media.url));
-
-//     } catch (err: any) {
-//         setError(err.message || 'An unknown error occurred during save');
-//     }
-// };
-
-const handleSave = async () => {
-    if (!editedMemorial) return;
+    const handleSave = async () => {
+        if (!editedMemorial) return;
   
-    try {
-      const formData = new FormData();
+        try {
+            const formData = new FormData();
   
-      // Basic fields with correct field names
-      formData.append('fullName', editedMemorial.fullName);
-      // Important: Backend uses nickName not nickname
-      if (editedMemorial.nickname) formData.append('nickName', editedMemorial.nickname); 
-      if (editedMemorial.maidenName) formData.append('maidenName', editedMemorial.maidenName);
-      if (editedMemorial.biography) formData.append('biography', editedMemorial.biography);
-      if (editedMemorial.identityNumber) formData.append('identityNumber', editedMemorial.identityNumber);
-      if (editedMemorial.identityType) formData.append('identityType', editedMemorial.identityType);
-      if (editedMemorial.placeOfBirth) formData.append('placeOfBirth', editedMemorial.placeOfBirth);
-      if (editedMemorial.nationality) formData.append('nationality', editedMemorial.nationality);
-      if (editedMemorial.religion) formData.append('religion', editedMemorial.religion);
-      if (editedMemorial.favoriteQuote) formData.append('favoriteQuote', editedMemorial.favoriteQuote);
-      if (editedMemorial.serviceLocation) formData.append('serviceLocation', editedMemorial.serviceLocation);
-      if (editedMemorial.serviceDetails) formData.append('serviceDetails', editedMemorial.serviceDetails);
-      
-      // Handle dates properly
-      if (editedMemorial.birthDate) formData.append('birthDate', new Date(editedMemorial.birthDate).toISOString());
-      if (editedMemorial.deathDate) formData.append('deathDate', new Date(editedMemorial.deathDate).toISOString());
-      if (editedMemorial.serviceDate) formData.append('serviceDate', new Date(editedMemorial.serviceDate).toISOString());
+            formData.append('fullName', editedMemorial.fullName);
+            if (editedMemorial.nickname) formData.append('nickName', editedMemorial.nickname); 
+            if (editedMemorial.maidenName) formData.append('maidenName', editedMemorial.maidenName);
+            if (editedMemorial.biography) formData.append('biography', editedMemorial.biography);
+            if (editedMemorial.identityNumber) formData.append('identityNumber', editedMemorial.identityNumber);
+            if (editedMemorial.identityType) formData.append('identityType', editedMemorial.identityType);
+            if (editedMemorial.placeOfBirth) formData.append('placeOfBirth', editedMemorial.placeOfBirth);
+            if (editedMemorial.nationality) formData.append('nationality', editedMemorial.nationality);
+            if (editedMemorial.religion) formData.append('religion', editedMemorial.religion);
+            if (editedMemorial.favoriteQuote) formData.append('favoriteQuote', editedMemorial.favoriteQuote);
+            if (editedMemorial.serviceLocation) formData.append('serviceLocation', editedMemorial.serviceLocation);
+            if (editedMemorial.serviceDetails) formData.append('serviceDetails', editedMemorial.serviceDetails);
+            
+            if (editedMemorial.birthDate) formData.append('birthDate', new Date(editedMemorial.birthDate).toISOString());
+            if (editedMemorial.deathDate) formData.append('deathDate', new Date(editedMemorial.deathDate).toISOString());
+            if (editedMemorial.serviceDate) formData.append('serviceDate', new Date(editedMemorial.serviceDate).toISOString());
   
-      // Handle boolean values correctly
-      formData.append('isPublic', String(!!editedMemorial.isPublic));
-      formData.append('birthdayReminder', String(!!editedMemorial.birthdayReminder));
-      formData.append('militaryService', String(!!editedMemorial.militaryService));
-      formData.append('enableDigitalFlowers', String(!!editedMemorial.enableDigitalFlowers));
+            formData.append('isPublic', String(!!editedMemorial.isPublic));
+            formData.append('birthdayReminder', String(!!editedMemorial.birthdayReminder));
+            formData.append('militaryService', String(!!editedMemorial.militaryService));
+            formData.append('enableDigitalFlowers', String(!!editedMemorial.enableDigitalFlowers));
   
-      // Backend expects languagesSpoken not languages
-      if (editedMemorial.languages && editedMemorial.languages.length > 0) {
-        formData.append('languagesSpoken', JSON.stringify(editedMemorial.languages));
-      }
+            if (editedMemorial.languages && editedMemorial.languages.length > 0) {
+                formData.append('languagesSpoken', JSON.stringify(editedMemorial.languages));
+            }
   
-      // Complex objects need to be stringified
-      if (editedMemorial.education && editedMemorial.education.length > 0) {
-        formData.append('education', JSON.stringify(editedMemorial.education));
-      }
+            if (editedMemorial.education && editedMemorial.education.length > 0) {
+                formData.append('education', JSON.stringify(editedMemorial.education));
+            }
   
-      if (editedMemorial.familyMembers && editedMemorial.familyMembers.length > 0) {
-        formData.append('familyMembers', JSON.stringify(editedMemorial.familyMembers));
-      }
+            if (editedMemorial.familyMembers && editedMemorial.familyMembers.length > 0) {
+                formData.append('familyMembers', JSON.stringify(editedMemorial.familyMembers));
+            }
   
-      if (editedMemorial.causeOfDeath) {
-        formData.append('causeOfDeath', JSON.stringify(editedMemorial.causeOfDeath));
-      }
+            if (editedMemorial.causeOfDeath) {
+                formData.append('causeOfDeath', JSON.stringify(editedMemorial.causeOfDeath));
+            }
   
-      // Handle main picture
-      if (editedMemorial.mainPicture instanceof File) {
-        formData.append('mainPicture', editedMemorial.mainPicture);
-      } else if (mainPicturePreview && mainPicturePreview.startsWith('data:')) {
-        const blob = await fetch(mainPicturePreview).then(r => r.blob());
-        formData.append('mainPicture', blob, 'main_picture.jpg');
-      }
+            if (editedMemorial.mainPicture instanceof File) {
+                formData.append('mainPicture', editedMemorial.mainPicture);
+            } else if (mainPicturePreview && mainPicturePreview.startsWith('data:')) {
+                const blob = await fetch(mainPicturePreview).then(r => r.blob());
+                formData.append('mainPicture', blob, 'main_picture.jpg');
+            }
   
-      // Handle additionalMedia - separate existing and new media
-      if (editedMemorial.additionalMedia && editedMemorial.additionalMedia.length > 0) {
-        // First, handle existing media with URLs
-        const existingMedia = editedMemorial.additionalMedia
-          .filter(media => media.url && !media.url.startsWith('data:') && !media.file)
-          .map(media => ({ type: media.type, url: media.url }));
-        
-        // Send existing media as a JSON string
-        formData.append('existingMedia', JSON.stringify(existingMedia));
-        
-        // Then handle new uploads
-        let newMediaCount = 0;
-        for (const media of editedMemorial.additionalMedia) {
-          if (media.file) {
-            // If it's a File object
-            formData.append('additionalMedia', media.file);
-            newMediaCount++;
-          } else if (media.url && media.url.startsWith('data:')) {
-            // If it's a data URL from a new upload
-            const blob = await fetch(media.url).then(r => r.blob());
-            const fileExt = media.type === 'photo' ? 'jpg' : 'mp4';
-            formData.append('additionalMedia', blob, `media_${newMediaCount}.${fileExt}`);
-            newMediaCount++;
-          }
+            if (editedMemorial.additionalMedia && editedMemorial.additionalMedia.length > 0) {
+                const existingMedia = editedMemorial.additionalMedia
+                  .filter(media => media.url && !media.url.startsWith('data:') && !media.file)
+                  .map(media => ({ type: media.type, url: media.url }));
+                
+                formData.append('existingMedia', JSON.stringify(existingMedia));
+                
+                let newMediaCount = 0;
+                for (const media of editedMemorial.additionalMedia) {
+                  if (media.file) {
+                    formData.append('additionalMedia', media.file);
+                    newMediaCount++;
+                  } else if (media.url && media.url.startsWith('data:')) {
+                    const blob = await fetch(media.url).then(r => r.blob());
+                    const fileExt = media.type === 'photo' ? 'jpg' : 'mp4';
+                    formData.append('additionalMedia', blob, `media_${newMediaCount}.${fileExt}`);
+                    newMediaCount++;
+                  }
+                }
+            }
+  
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                throw new Error('No auth token found');
+            }
+  
+            console.log('Sending update with formData:', Object.fromEntries(formData));
+  
+            const response = await fetch(`http://localhost:5000/api/memorials/${id}`, {
+                method: 'PUT',
+                body: formData,
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                },
+            });
+  
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Failed to update memorial: ${response.status}`);
+            }
+  
+            const updatedData = await response.json();
+            const parsedData: MemorialDetails = {
+                ...updatedData,
+                languages: updatedData.languagesSpoken || [],
+                education: updatedData.education || [],
+                familyMembers: updatedData.familyMembers || [],
+                additionalMedia: updatedData.additionalMedia || [],
+                causeOfDeath: updatedData.causeOfDeath || { primaryCause: '', majorEvent: ''},
+                tributes: updatedData.tributes || [],
+            };
+            
+            setMemorial(parsedData);
+            setEditedMemorial(parsedData);
+            setIsEditing(false);
+            setMainPicturePreview(parsedData.mainPicture);
+            setAdditionalMediaPreviews(parsedData.additionalMedia.map(media => media.url));
+            
+            alert('Memorial updated successfully');
+  
+        } catch (err: any) {
+            console.error('Update error:', err);
+            setError(err.message || 'An unknown error occurred during save');
+            alert(`Error updating memorial: ${err.message}`);
         }
-      }
-  
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('No auth token found');
-      }
-  
-      console.log('Sending update with formData:', Object.fromEntries(formData));
-  
-      const response = await fetch(`http://localhost:5000/api/memorials/${id}`, {
-        method: 'PUT',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to update memorial: ${response.status}`);
-      }
-  
-      const updatedData = await response.json();
-      const parsedData: MemorialDetails = {
-        ...updatedData,
-        languages: updatedData.languagesSpoken || [],
-        education: updatedData.education || [],
-        familyMembers: updatedData.familyMembers || [],
-        additionalMedia: updatedData.additionalMedia || [],
-        causeOfDeath: updatedData.causeOfDeath || { primaryCause: '', majorEvent: ''},
-        tributes: updatedData.tributes || [],
-      };
-      
-      setMemorial(parsedData);
-      setIsEditing(false);
-      setMainPicturePreview(parsedData.mainPicture);
-      setAdditionalMediaPreviews(parsedData.additionalMedia.map(media => media.url));
-      
-      // Show success message
-      alert('Memorial updated successfully');
-  
-    } catch (err: any) {
-      console.error('Update error:', err);
-      setError(err.message || 'An unknown error occurred during save');
-      alert(`Error updating memorial: ${err.message}`);
-    }
-  };
-
+    };
 
     const handleDelete = async () => {
         if (window.confirm('Are you sure you want to delete this memorial?')) {
@@ -427,27 +326,25 @@ const handleSave = async () => {
                     throw new Error(`Failed to delete memorial: ${response.status} ${response.statusText}`);
                 }
 
-                navigate('/'); // Redirect to home page or another appropriate page
+                navigate('/'); 
             } catch (err: any) {
                 setError(err.message || 'An unknown error occurred during delete');
             }
         }
     };
 
-
     const handleNestedInputChange = (section: string, index: number, field: string, value: any) => {
     setEditedMemorial(prev => {
         if (!prev) return null;
-        const updatedSection = [...(prev[section as keyof MemorialDetails] as any[])]; // Type assertion
+        const updatedSection = [...(prev[section as keyof MemorialDetails] as any[])]; 
         if (!updatedSection[index]) {
-            updatedSection[index] = {} as any; // Initialize if undefined
+            updatedSection[index] = {} as any; 
         }
         updatedSection[index] = { ...updatedSection[index], [field]: value };
 
         return { ...prev, [section]: updatedSection };
     });
 };
-
 
     const renderTabContent = () => {
       if (!memorial) return null;
@@ -804,8 +701,7 @@ const handleSave = async () => {
             </div>
           );
         case 'family':
-          // ... (Similar structure for other cases - add input fields inside isEditing checks)
-           return (
+          return (
             <div className="bg-white rounded-xl p-6 shadow-sm">
                 <div className="flex items-center mb-6">
                     <Users className="h-5 w-5 text-gray-400 mr-2" />
@@ -1014,7 +910,7 @@ const handleSave = async () => {
                                 {file.type === 'photo' ? (
                                     <div className="aspect-w-4 aspect-h-3">
                                         <img
-                                             src={additionalMediaPreviews[index] || file.url}
+                                            src={additionalMediaPreviews[index] || file.url}
                                             alt={file.caption || `Media ${index}`}
                                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                                         />
@@ -1022,7 +918,7 @@ const handleSave = async () => {
                                     </div>
                                 ) : file.type === 'video' ? (
                                     <video
-                                         src={additionalMediaPreviews[index] || file.url}
+                                        src={additionalMediaPreviews[index] || file.url}
                                         className="h-full w-full object-cover rounded-xl"
                                         controls
                                     />
@@ -1076,6 +972,101 @@ const handleSave = async () => {
     }
 };
 
+    // Check URL params for payment success/cancel
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const paymentSuccess = params.get('payment_success');
+        const sessionId = params.get('session_id');
+
+        if (paymentSuccess === 'true' && sessionId) {
+            completeFlowerPayment(sessionId);
+        }
+    }, [location]);
+
+    // Complete the flower payment process
+    const completeFlowerPayment = async (sessionId: string) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                setError('You must be logged in to complete this action');
+                return;
+            }
+
+            const response = await fetch('http://localhost:5000/api/flowers/complete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ sessionId })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setSuccess('Thank you for your flower tribute!');
+                
+                // Refresh memorial data to show new tribute
+                if (id) {
+                    fetchMemorial(); 
+                }
+                
+                // Clean up the URL
+                const cleanUrl = location.pathname;
+                navigate(cleanUrl, { replace: true });
+            } else {
+                setError(data.error || 'Failed to complete payment process');
+            }
+        } catch (err: any) {
+            setError(err.message || 'An error occurred during payment completion');
+        }
+    };
+
+    // Send flower tribute
+    const sendFlowerTribute = async () => {
+        setError(null);
+        setSuccess(null);
+        setSending(true);
+
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                // Redirect to login if not authenticated
+                navigate('/login', { state: { from: location.pathname, message: 'Please log in to send flowers' } });
+                return;
+            }
+
+            const response = await fetch('http://localhost:5000/api/flowers/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    memorialId: id,
+                    amount: donation,
+                    message: tributeMessage
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Redirect to Stripe checkout
+                window.location.href = data.url;
+            } else {
+                if (data.redirectToLogin) {
+                    navigate('/login', { state: { from: location.pathname, message: 'Please log in to send flowers' } });
+                } else {
+                    setError(data.error || 'Failed to send flower tribute');
+                }
+            }
+        } catch (err: any) {
+            setError(err.message || 'An error occurred');
+        } finally {
+            setSending(false);
+        }
+    };
 
     if (loading) {
         return <div>Loading...</div>;
@@ -1088,7 +1079,6 @@ const handleSave = async () => {
     if (!memorial) {
         return <div>Memorial not found.</div>;
     }
-
 
     return (
         <div className="min-h-screen  text-left  bg-gray-50 ">
@@ -1278,26 +1268,100 @@ const handleSave = async () => {
                                 <div className="text-center">
                                     <Flower2 className="h-10 w-10 mx-auto text-indigo-600 mb-3" />
                                     <h3 className="text-xl font-semibold text-gray-900 mb-2">Send Digital Flowers</h3>
-                                    <p className="text-gray-600 mb-6">
+                                    <p className="text-gray-600 mb-4">
                                         Honor the memory with a digital flower and optional donation
-                  </p>
+                                    </p>
+
+                                    {/* Error and Success Messages */}
+                                    {error && (
+                                        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+                                            {error}
+                                        </div>
+                                    )}
+                                    {success && (
+                                        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm">
+                                            {success}
+                                        </div>
+                                    )}
+
+                                    {/* Tribute Message */}
+                                    <div className="mb-4">
+                                        <div className="flex items-center mb-2">
+                                            <MessageSquare className="h-4 w-4 text-gray-600 mr-2" />
+                                            <label className="text-sm font-medium text-gray-700">Message (Optional)</label>
+                                        </div>
+                                        <textarea 
+                                            value={tributeMessage}
+                                            onChange={(e) => setTributeMessage(e.target.value)}
+                                            placeholder="Add a personal message..."
+                                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                            rows={3}
+                                            maxLength={500}
+                                        />
+                                    </div>
 
                                     {/* Donation Controls */}
                                     <div className="flex items-center justify-center gap-4 mb-4">
-                                        <button onClick={decrementDonation} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+                                        <button 
+                                            onClick={decrementDonation} 
+                                            className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+                                            disabled={sending}
+                                        >
                                             <Minus className="h-4 w-4 text-gray-700" />
                                         </button>
                                         <span className="text-lg font-semibold">${donation}</span>
-                                        <button onClick={incrementDonation} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+                                        <button 
+                                            onClick={incrementDonation} 
+                                            className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+                                            disabled={sending}
+                                        >
                                             <Plus className="h-4 w-4 text-gray-700" />
                                         </button>
                                     </div>
 
-                                     {/* Send Flowers Button -  Keep this, but consider adding a loading state */}
-                                    <button className="btn-primary w-full flex items-center justify-center gap-2">
-                                        <Heart className="h-5 w-5" />
-                                        Send Flowers (${donation})
+                                    {/* Send Flowers Button */}
+                                    <button 
+                                        onClick={sendFlowerTribute} 
+                                        className="btn-primary w-full flex items-center justify-center gap-2"
+                                        disabled={sending}
+                                    >
+                                        {sending ? (
+                                            <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                                        ) : (
+                                            <Heart className="h-5 w-5" />
+                                        )}
+                                        {sending ? 'Processing...' : `Send Flowers ($${donation})`}
                                     </button>
+
+                                    {/* Show recent tributes preview */}
+                                    {memorial.tributes && memorial.tributes.length > 0 && (
+                                        <div className="mt-6 pt-4 border-t border-gray-100">
+                                            <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Tributes</h4>
+                                            <div className="space-y-2">
+                                                {memorial.tributes.slice(0, 3).map((tribute, index) => (
+                                                    <div key={index} className="flex items-start text-left p-2 bg-white rounded-md shadow-sm">
+                                                        <Heart className="h-4 w-4 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">
+                                                                {tribute.isAnonymous ? 'Anonymous' : tribute.senderName} 
+                                                                <span className="mx-1">•</span> 
+                                                                ${tribute.amount}
+                                                            </p>
+                                                            {tribute.message && (
+                                                                <p className="text-sm text-gray-700 truncate">{tribute.message}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <button 
+                                                onClick={() => setActiveTab('about')} 
+                                                className="text-sm text-indigo-600 hover:text-indigo-800 mt-2"
+                                            >
+                                                View all tributes
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
