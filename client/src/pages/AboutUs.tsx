@@ -58,7 +58,7 @@ const AboutUs: React.FC = () => {
         {/* Benefits */}
         <div>
             <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Why Choose WebGrave?</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {benefits.map((benefit, index) => (
                 <div key={index} className="bg-white rounded-xl p-6 shadow-sm">
                   <benefit.icon className="h-8 w-8 text-primary-600 mb-4" />

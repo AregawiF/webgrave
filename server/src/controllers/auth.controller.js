@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../models/user.model');
-
+const Memorial = require('../models/memorial.model');
 
 exports.signup = async (req, res) => {
   try {
@@ -112,9 +112,17 @@ exports.getProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+
+    const memorials = await Memorial.find({ createdBy: req.user.userId })
+      .select('fullName mainPicture createdAt id')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      user,
+      memorials
+    });
   } catch (error) {
-    console.error('Get profile error details:', error); // Detailed error logging
+    console.error('Get profile error details:', error);
     res.status(500).json({ 
       message: 'Error fetching profile',
       error: error.message 

@@ -22,6 +22,7 @@ import FlowerPaymentSuccess from './pages/FlowerPaymentSuccess';
 import FlowerPaymentCancel from './pages/FlowerPaymentCancel';
 import AdminPanel from './pages/AdminPanel';
 import AdminRoute from './components/AdminRoute';
+import Profile from './pages/Profile';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -116,6 +117,7 @@ const App: React.FC = () => {
                 </AdminRoute>
               } 
             />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

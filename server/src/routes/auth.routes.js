@@ -22,5 +22,6 @@ const loginValidation = [
 router.post('/signup', signupValidation, authController.signup);
 router.post('/login', loginValidation, authController.login);
 router.get('/profile', authenticate, authController.getProfile);
+router.delete('/delete-profile', authenticate, authController.deleteProfile);
 
 module.exports = router;
