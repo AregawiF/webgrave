@@ -77,8 +77,8 @@ const Profile = () => {
     }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white shadow-lg rounded-lg p-6 max-w-3xl w-full">
+    <div className="min-h-screen bg-gray-100 flex justify-center p-4">
+      <div className="bg-white h-fit shadow-lg rounded-lg p-6 max-w-3xl w-full">
         <h2 className="text-3xl font-semibold text-gray-800 text-center mb-6">Profile</h2>
         <div className="bg-gray-200 p-4 rounded-lg mb-6 flex justify-between">
             <div className=" ">

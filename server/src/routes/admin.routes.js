@@ -12,9 +12,6 @@ router.use(isAdmin);
 // Dashboard statistics
 router.get('/dashboard', adminController.getDashboardStats);
 
-// Memorials management
-router.get('/memorials', adminController.getAllMemorials);
-
 // Tributes management
 router.get('/tributes', adminController.getAllTributes);
 
@@ -26,5 +23,8 @@ router.get('/users/:id', adminController.adminGetUserProfile);
 
 // Delete user
 router.delete('/users/:id', adminController.adminDeleteProfile);
+
+// Delete tribute
+router.delete('/tributes/:id', adminController.adminDeleteTribute);
 
 module.exports = router;

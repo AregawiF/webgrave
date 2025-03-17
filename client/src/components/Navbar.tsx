@@ -11,15 +11,23 @@ import logo from '../assets/webgrave-logo.png';
 
 interface NavbarProps {
   isAuthenticated: boolean;
-  handleLogout: () => void;
+  setIsAuthenticated: (val:boolean) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, handleLogout }) => {
+const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, setIsAuthenticated }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('tokenExpiresAt');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    navigate('/login');
+  };
 
   // Check if user has admin role
   useEffect(() => {
@@ -103,7 +111,7 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, handleLogout }) => {
                 <User size={20} />
               </button>
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 bg-white shadow-md rounded py-2 w-40">
+                <div className="absolute right-0 mt-2 bg-white shadow-md rounded py-2 w-40 z-40">
                   <button onClick={() => navigate('/profile')} className="block px-4 py-2 hover:bg-gray-100 w-full text-left">Profile</button>
                   <button onClick={handleLogout} className="block px-4 py-2 hover:bg-gray-100 w-full text-left text-red-500">Logout</button>
                 </div>
@@ -166,7 +174,7 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, handleLogout }) => {
               </Link>
             </div>
           ) : (
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col space-y-2 z-40">
               <button onClick={() => navigate('/profile')} className="block py-2 hover:bg-gray-100 w-full text-left">Profile</button>
               <button onClick={handleLogout} className="block py-2 hover:bg-gray-100 w-full text-left text-red-500">Logout</button>
             </div>

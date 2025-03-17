@@ -39,7 +39,9 @@ const App: React.FC = () => {
           setIsAuthenticated(true);
         } else {
           // Clear expired token
-          handleLogout();
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('tokenExpiresAt');
+          localStorage.removeItem('user');
         }
       } else {
         setIsAuthenticated(false);
@@ -51,17 +53,11 @@ const App: React.FC = () => {
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('tokenExpiresAt');
-    localStorage.removeItem('user');
-    setIsAuthenticated(false);
-  };
 
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
-        <Navbar isAuthenticated={isAuthenticated} handleLogout={handleLogout} />
+        <Navbar isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated}/>
         <main className="flex-grow">
           {/* add footer component at the bottom of every page after every page */}
 

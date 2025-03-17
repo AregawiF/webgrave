@@ -39,7 +39,7 @@ export default function FindMemorial() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [searchCriteria, setSearchCriteria] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -105,6 +105,14 @@ export default function FindMemorial() {
 
   if (showAdmin) {
     return <AdminPanel />;
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
   }
 
   const formatYear = (dateString: string) => {

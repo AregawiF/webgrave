@@ -118,6 +118,7 @@ const completeFlowerTribute = async (req, res) => {
     // Get the message from the line items description or use a default
     const message = session.line_items?.data[0]?.description || 'Digital flower tribute';
 
+    console.log('flower message:', session.line_items)
     // Get the senderId from the request user or use the one from metadata
     const senderId = req.user?.userId || userId;
 

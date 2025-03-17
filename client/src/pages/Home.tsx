@@ -29,7 +29,7 @@ export default function Home() {
                 <span className="block">Memories Made Eternal,</span>
                 <span className="block text-primary-600">One Scan Away</span>
               </h1>
-              <p className="mt-3 text-base text-surface-600 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+              <p className="mt-3 mr-3 text-base text-surface-600 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                 Honor your loved ones with digital memorials that connect the physical world with cherished memories. Create lasting tributes accessible through unique QR codes.
               </p>
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start gap-4">

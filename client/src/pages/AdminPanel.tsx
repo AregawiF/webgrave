@@ -5,21 +5,100 @@ import {
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
+interface User {
+  firstName: string;
+  lastName: string;
+  email: string;
+  createdAt: Date;
+}
+
+
+interface Tribute {
+  _id: string;
+  sender: User;
+  receiver: User;
+  amount: number;
+  transactionId: string;
+  createdAt: Date;
+}
+
+interface Memorial {
+  _id: string;
+  fullName: string;
+  totalTributes: number;
+  createdAt: Date;
+}
+
+interface Stats {
+  totalMemorials: number;
+  memorialRevenue: number;
+  flowerRevenue: number;
+  totalRevenue: number;
+  totalUsers: number;
+  recentMemorials: Memorial[];
+  recentTributes: {
+    amount: number;
+    createdAt: Date;
+  }[];
+}
+
+
 const AdminPanel = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [users, setUsers] = useState<any>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [tributes, setTributes] = useState<Tribute[]>([]);
+  const [numberOfTributes, setNumberOfTributes] = useState(0);
+
+  const fetchUsers = async () => {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch('http://localhost:5000/api/admin/users', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      method: 'GET',
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.log('error fetching users', errorData);
+      setError('Failed to fetch users');
+      return;
+    }
+    
+    const data = await response.json();
+    setUsers(data.users);
+  };
+
+  const fetchAllTributes = async () =>{
+    const token = localStorage.getItem('authToken');
+    const response = await fetch('http://localhost:5000/api/admin/tributes', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      method: 'GET',
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.log('error fetching tributes', errorData);
+      setError('Failed to fetch tributes');
+      return;
+    }
+    
+    const data = await response.json();
+    setTributes(data.tributes);
+    setNumberOfTributes(data.total);
+  }
 
   useEffect(() => {
-    console.log("AdminPanel component mounted");
 
     // Check if user is admin
     const checkAdminAccess = async () => {
       try {
-        console.log("Checking admin access...");
         const token = localStorage.getItem('authToken');
         
         if (!token) {
@@ -35,21 +114,37 @@ const AdminPanel = () => {
           try {
             const user = JSON.parse(userStr);
             if (user.role === 'admin') {
-              console.log("User is an admin");
               setIsAdmin(true);
-              
-              // Set dummy stats for now
-              setStats({
-                totalMemorials: 15,
-                totalUsers: 25,
-                totalRevenue: 300,
-                memorialRevenue: 240,
-                flowerRevenue: 60,
-                recentMemorials: [],
-                recentTributes: []
+
+              // Fetch stats
+              const statsResponse = await fetch('http://localhost:5000/api/admin/dashboard', {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+                method: 'GET',
               });
+              
+              if (!statsResponse.ok) {
+                const errorData = await statsResponse.json();
+                console.log('error fetching stats', errorData);
+                setError('Failed to fetch stats');
+                return;
+              }
+              
+              const statsData = await statsResponse.json();
+              setStats(statsData);
+              
+              // // Set dummy stats for now
+              // setStats({
+              //   totalMemorials: 15,
+              //   totalUsers: 25,
+              //   totalRevenue: 300,
+              //   memorialRevenue: 240,
+              //   flowerRevenue: 60,
+              //   recentMemorials: [],
+              //   recentTributes: []
+              // });
             } else {
-              console.log("User is not an admin");
               setError("You need admin privileges to access this page.");
               navigate('/');
             }
@@ -58,7 +153,6 @@ const AdminPanel = () => {
             setError("Error checking admin status.");
           }
         } else {
-          console.log("No user data found");
           setError("User session data missing.");
           navigate('/login');
         }
@@ -69,30 +163,10 @@ const AdminPanel = () => {
         setIsLoading(false);
       }
     };
-
-    const fetchUsers = async () => {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5000/api/admin/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        method: 'GET',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log('error fetching users', errorData);
-        setError('Failed to fetch users');
-        return;
-      }
-      
-      const data = await response.json();
-      console.log('Api response:', data);
-      setUsers(data.users);
-    };
     
     checkAdminAccess();
     fetchUsers();
+    fetchAllTributes();
   }, [navigate]);
 
   if (isLoading) {
@@ -134,6 +208,50 @@ const AdminPanel = () => {
         </div>
       </div>
     );
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    const token = localStorage.getItem('authToken');
+    
+    const isConfirmed = window.confirm('Are you sure you want to delete your profile? This action cannot be undone.');
+    if (!isConfirmed) return;
+    try {
+        const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to delete profile');
+        }
+        localStorage.removeItem('authToken');
+        navigate('/signup');
+    } catch (error:any) {
+        setError(error.message);
+    }
+  }
+
+  const handleDeleteTribute = async (flowerId: string) => { 
+      const isConfirmed = window.confirm('Are you sure you want to delete this tribute? This action cannot be undone.');
+      if (!isConfirmed) return;
+      const token = localStorage.getItem('authToken');
+      try {
+        const response = await fetch(`http://localhost:5000/api/admin/tributes/${flowerId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to delete tribute');
+        }
+        fetchAllTributes();
+      } catch (error:any) {
+        setError(error.message);
+      }
   }
 
   return (
@@ -185,27 +303,64 @@ const AdminPanel = () => {
 
         {/* Simple dashboard info */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Users</h2>
 
-          {/* show list of users with delete option */}
-          <div className="space-y-4">
-            {users.map(user => (
-              <div key={user._id} className="bg-gray-50 p-4 rounded-lg shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-lg font-medium">{user.firstName} {user.lastName}</p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
+          <div className='grid grid-cols-3 gap-4'>
+            <div>
+            {/* show list of users with delete option */}
+            <h2 className="text-xl font-semibold mb-4 col-span-1">Users</h2>
+              <div className="space-y-4">
+                {users.map(user => (
+                  <div key={user._id} className="bg-gray-50 p-4 rounded-lg shadow">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-lg font-medium">{user.firstName} {user.lastName}</p>
+                        <p className="text-sm text-gray-500">{user.email}</p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteUser(user._id)}
+                        className="bg-red-500 text-white px-4 py-2 rounded-md font-medium hover:bg-red-600 transition-colors"
+                        >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteUser(user._id)}
-                    className="bg-red-500 text-white px-4 py-2 rounded-md font-medium hover:bg-red-600 transition-colors"
-                  >
-                    Delete
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
+            {/* show list of tributes */}
+            <div className="space-y-4 col-span-2">
+              <h2 className="text-xl font-semibold mb-4">Tributes</h2>
+              <p className="text-lg font-medium">Number of Flowers: {numberOfTributes}</p>
+              {tributes && tributes.map(tribute => (
+                <div key={tribute._id} className="bg-gray-50 p-4 rounded-lg shadow">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">Reciever: {tribute.receiver.firstName} {tribute.receiver.lastName}</p>
+                      <p className="text-sm text-gray-700">Reciever Email: {tribute.receiver.email}</p>
+                      <p className="text-sm text-gray-700">Sender: {tribute.sender.firstName} {tribute.sender.lastName}</p>
+                      <p className="text-sm text-gray-700">Sender Email: {tribute.sender.email}</p>
+                      <p className="text-sm text-gray-700">Amount: ${tribute.amount}</p>
+                      <p className="text-sm text-gray-700">Transaction Id: {tribute.transactionId}</p>
+                      <p className="text-sm text-gray-500">Created At: {new Date(tribute.createdAt).toLocaleDateString('en-US', { 
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteTribute(tribute._id)}
+                      className="bg-red-500 text-white px-4 py-2 rounded-md font-medium hover:bg-red-600 transition-colors"
+                      >
+                      Delete record
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+
         </div>
       </div>
     </div>

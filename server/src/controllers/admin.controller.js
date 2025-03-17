@@ -49,54 +49,6 @@ exports.getDashboardStats = async (req, res) => {
   }
 };
 
-// Get all memorials for admin
-exports.getAllMemorials = async (req, res) => {
-  try {
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
-    } = req.query;
-
-    const query = {};
-
-    // Apply search filter if provided
-    if (search) {
-      query.$or = [
-        { fullName: new RegExp(search, 'i') },
-        { biography: new RegExp(search, 'i') }
-      ];
-    }
-
-    // Get total count for pagination
-    const total = await Memorial.countDocuments(query);
-
-    // Prepare sort options
-    const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
-
-    // Get paginated results
-    const memorials = await Memorial.find(query)
-      .sort(sortOptions)
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .populate('createdBy', 'firstName lastName email')
-      .select('-tributes');
-
-    res.json({
-      memorials,
-      totalPages: Math.ceil(total / limit),
-      currentPage: Number(page),
-      total
-    });
-  } catch (error) {
-    console.error('Admin get all memorials error:', error);
-    res.status(500).json({ message: 'Failed to retrieve memorials' });
-  }
-};
-
 // Get all tributes for admin
 exports.getAllTributes = async (req, res) => {
   try {
@@ -115,17 +67,37 @@ exports.getAllTributes = async (req, res) => {
     const total = await Flower.countDocuments();
 
     // Get paginated results
-    const tributes = await Flower.find()
+    const tributesDb = await Flower.find()
       .sort(sortOptions)
       .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .populate('memorialId', 'fullName')
-      .populate('senderId', 'firstName lastName email');
+      .skip((page - 1) * limit);
 
+    // Process all tributes in parallel
+    const tributes = await Promise.all(tributesDb.map(async (tribute) => {
+      // Get sender and receiver in parallel
+      const [sender, memorial] = await Promise.all([
+        User.findById(tribute.senderId).select('-password'),
+        Memorial.findById(tribute.memorialId)
+      ]);
+
+      let receiver = null;
+      if (memorial) {
+        receiver = await User.findById(memorial.createdBy).select('-password -role -_id');
+      }
+
+      return {
+        _id: tribute._id,
+        sender: sender || null,
+        receiver: receiver || null,
+        amount: tribute.amount,
+        transactionId: tribute.transactionId,
+        createdAt: tribute.createdAt
+      };
+    }));
+
+    console.log(tributes);
     res.json({
       tributes,
-      totalPages: Math.ceil(total / limit),
-      currentPage: Number(page),
       total
     });
   } catch (error) {
@@ -204,6 +176,13 @@ exports.adminGetUserProfile = async (req, res) => {
 // adminDeleteProfile
 exports.adminDeleteProfile = async (req, res) => {
   try {
+
+    // make sure it is an admin
+    const askerRole = req.user.role;
+    if (askerRole !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
+    }
+
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -218,3 +197,20 @@ exports.adminDeleteProfile = async (req, res) => {
   }
 };
 
+
+// adminDeleteTribute
+exports.adminDeleteTribute = async (req, res) => {
+  try {
+    const tribute = await Flower.findByIdAndDelete(req.params.id);
+    if (!tribute) {
+      return res.status(404).json({ message: 'Tribute not found' });
+    }
+    res.json({ message: 'Tribute deleted successfully' });
+  } catch (error) {
+    console.error('Delete tribute had errors:', error); // Detailed error logging
+    res.status(500).json({ 
+      message: 'Error deleting tribute',
+      error: error.message 
+    });
+  }
+};

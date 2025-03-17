@@ -326,7 +326,7 @@ export default function MemorialDetailsPage() {
                     throw new Error(`Failed to delete memorial: ${response.status} ${response.statusText}`);
                 }
 
-                navigate('/'); 
+                navigate('/find-memorials'); 
             } catch (err: any) {
                 setError(err.message || 'An unknown error occurred during delete');
             }
