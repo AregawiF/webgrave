@@ -1,11 +1,11 @@
-import { Instagram, Facebook, Twitter, Envelope } from 'lucide-react';
+import { Instagram, Facebook, Twitter, Mail } from 'lucide-react';
 
 export function SocialLinks() {
   const socialLinks = [
     { icon: Instagram, href: 'https://www.instagram.com/webgravememorials/', label: 'Instagram' },
     { icon: Facebook, href: 'https://web.facebook.com/webgrave/', label: 'Facebook' },
     { icon: Twitter, href: 'https://x.com/webgrave', label: 'X' },
-    { icon: Envelope, href: 'mailto:info@web-grave.com', label: 'Email' },
+    { icon: Mail, href: 'mailto:info@web-grave.com', label: 'Email' },
   ];
 
   return (
