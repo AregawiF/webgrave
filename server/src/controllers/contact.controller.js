@@ -38,13 +38,16 @@ exports.submitContactForm = async (req, res) => {
       `
     };
 
+    console.log("Attempting to send email...");
     await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully!");
 
     res.status(201).json({
       message: 'Contact form submitted successfully',
       submission: contactSubmission
     });
   } catch (error) {
+    console.error('Error submitting contact form:', error);
     res.status(500).json({ message: error.message });
   }
 };

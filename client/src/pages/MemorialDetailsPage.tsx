@@ -240,24 +240,20 @@ export default function MemorialDetailsPage() {
             }
   
             if (editedMemorial.additionalMedia && editedMemorial.additionalMedia.length > 0) {
-                const existingMedia = editedMemorial.additionalMedia
-                  .filter(media => media.url && !media.url.startsWith('data:') && !media.file)
-                  .map(media => ({ type: media.type, url: media.url }));
-                
-                formData.append('existingMedia', JSON.stringify(existingMedia));
-                
                 let newMediaCount = 0;
                 for (const media of editedMemorial.additionalMedia) {
-                  if (media.file) {
-                    formData.append('additionalMedia', media.file);
-                    newMediaCount++;
-                  } else if (media.url && media.url.startsWith('data:')) {
-                    const blob = await fetch(media.url).then(r => r.blob());
-                    const fileExt = media.type === 'photo' ? 'jpg' : 'mp4';
-                    formData.append('additionalMedia', blob, `media_${newMediaCount}.${fileExt}`);
-                    newMediaCount++;
-                  }
+                    if (media.file) {
+                        formData.append('additionalMedia', media.file);
+                        newMediaCount++;
+                    }
                 }
+                    // Append the existing media file's URLs to the form too.
+                    const existingMediaURLS = editedMemorial.additionalMedia
+                      .filter(media => media.url)
+                      .map(media => media.url);
+           
+                      formData.append('existingMedia', JSON.stringify(existingMediaURLS));
+           
             }
   
             const token = localStorage.getItem('authToken');

@@ -125,69 +125,69 @@ exports.getMemorialById = async (req, res) => {
 
 // Update a memorial
 exports.updateMemorial = async (req, res) => {
-  console.log('Update memorial:', req.body);  
+  console.log('Update memorial:', req.body);
   try {
-    const memorial = await Memorial.findById(req.params.id);
+      const memorial = await Memorial.findById(req.params.id);
 
-    if (!memorial) {
-      return res.status(404).json({ message: 'Memorial not found' });
-    }
+      if (!memorial) {
+          return res.status(404).json({ message: 'Memorial not found' });
+      }
 
-    console.log('user role:', req.user.role);
+      console.log('user role:', req.user.role);
 
-    // Check if user is the creator
-    if (req.user.userId.toString() !== memorial.createdBy.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Access denied' });
-    }
+      // Check if user is the creator
+      if (req.user.userId.toString() !== memorial.createdBy.toString() && req.user.role !== 'admin') {
+          return res.status(403).json({ message: 'Access denied' });
+      }
 
-    const updates = { ...req.body };
-    
-    // Handle main picture update
-    if (req.files?.mainPicture) {
-      const mainPictureResult = await uploadCloudinary(req.files.mainPicture[0].path);
-      updates.mainPicture = mainPictureResult.secure_url;
-    }
+      const updates = { ...req.body };
 
-    // Parse dates
-    if (updates.birthDate) updates.birthDate = new Date(updates.birthDate);
-    if (updates.deathDate) updates.deathDate = new Date(updates.deathDate);
-    if (updates.serviceDate) updates.serviceDate = new Date(updates.serviceDate);
+      // Handle main picture update
+      if (req.files?.mainPicture) {
+          const mainPictureResult = await uploadCloudinary(req.files.mainPicture[0].path);
+          updates.mainPicture = mainPictureResult.secure_url;
+      }
 
-    // Parse arrays and objects
-    if (updates.languagesSpoken) updates.languagesSpoken = JSON.parse(updates.languagesSpoken);
-    if (updates.education) updates.education = JSON.parse(updates.education);
-    if (updates.familyMembers) updates.familyMembers = JSON.parse(updates.familyMembers);
-    if (updates.causeOfDeath) updates.causeOfDeath = JSON.parse(updates.causeOfDeath);
+      // Parse dates - No need to convert if they're already in ISO format
+      // if (updates.birthDate) updates.birthDate = new Date(updates.birthDate); //Remove, date is ISOString
+      // if (updates.deathDate) updates.deathDate = new Date(updates.deathDate); //Remove, date is ISOString
+      // if (updates.serviceDate) updates.serviceDate = new Date(updates.serviceDate); //Remove, date is ISOString
 
-    // Parse booleans
-    if (updates.birthdayReminder !== undefined) updates.birthdayReminder = updates.birthdayReminder === 'true';
-    if (updates.militaryService !== undefined) updates.militaryService = updates.militaryService === 'true';
-    if (updates.enableDigitalFlowers !== undefined) updates.enableDigitalFlowers = updates.enableDigitalFlowers === 'true';
-    if (updates.isPublic !== undefined) updates.isPublic = updates.isPublic === 'true';
+      // Parse arrays and objects (ONLY if they exist in req.body)
+      if (req.body.languagesSpoken) updates.languagesSpoken = JSON.parse(req.body.languagesSpoken);
+      if (req.body.education) updates.education = JSON.parse(req.body.education);
+      if (req.body.familyMembers) updates.familyMembers = JSON.parse(req.body.familyMembers);
+      if (req.body.causeOfDeath) updates.causeOfDeath = JSON.parse(req.body.causeOfDeath);
 
-    // Handle additional media
-    if (req.files?.additionalMedia) {
-      const mediaPromises = req.files.additionalMedia.map(async (file) => {
-        const result = await uploadCloudinary(file.path);
-        return {
-          type: file.mimetype.startsWith('image/') ? 'photo' : 'video',
-          url: result.secure_url
-        };
-      });
-      const newMedia = await Promise.all(mediaPromises);
-      updates.additionalMedia = [...(memorial.additionalMedia || []), ...newMedia];
-    }
+      // Parse booleans (ONLY if they exist in req.body)
+      if (req.body.birthdayReminder !== undefined) updates.birthdayReminder = req.body.birthdayReminder === 'true';
+      if (req.body.militaryService !== undefined) updates.militaryService = req.body.militaryService === 'true';
+      if (req.body.enableDigitalFlowers !== undefined) updates.enableDigitalFlowers = req.body.enableDigitalFlowers === 'true';
+      if (req.body.isPublic !== undefined) updates.isPublic = req.body.isPublic === 'true';
 
-    const updatedMemorial = await Memorial.findByIdAndUpdate(
-      req.params.id,
-      updates,
-      { new: true, runValidators: true }
-    ).populate('createdBy', 'name email');
+      // Handle additional media
+      if (req.files?.additionalMedia) {
+          const mediaPromises = req.files.additionalMedia.map(async (file) => {
+              const result = await uploadCloudinary(file.path);
+              return {
+                  type: file.mimetype.startsWith('image/') ? 'photo' : 'video',
+                  url: result.secure_url
+              };
+          });
+          const newMedia = await Promise.all(mediaPromises);
+          updates.additionalMedia = [...(memorial.additionalMedia || []), ...newMedia];
+      }
 
-    res.json(updatedMemorial);
+      const updatedMemorial = await Memorial.findByIdAndUpdate(
+          req.params.id,
+          updates,
+          { new: true, runValidators: true }
+      ).populate('createdBy', 'name email');
+
+      res.json(updatedMemorial);
   } catch (error) {
-    console.error('Update memorial error:', error);
-    res.status(400).json({ message: error.message });
+      console.error('Update memorial error:', error);
+      res.status(400).json({ message: error.message });
   }
 };
 
