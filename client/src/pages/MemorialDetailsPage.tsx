@@ -86,7 +86,7 @@ export default function MemorialDetailsPage() {
     const fetchMemorial = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/memorials/${id}`);
+            const response = await fetch(`https://webgrave.onrender.com/api/memorials/${id}`);
             if (!response.ok) {
                 throw new Error(`Failed to fetch memorial: ${response.status} ${response.statusText}`);
             }
@@ -281,7 +281,7 @@ export default function MemorialDetailsPage() {
                 throw new Error('No auth token found');
             }
     
-            const response = await fetch(`http://localhost:5000/api/memorials/${id}`, {
+            const response = await fetch(`https://webgrave.onrender.com/api/memorials/${id}`, {
                 method: 'PUT',
                 body: formData,
                 headers: {
@@ -329,7 +329,7 @@ export default function MemorialDetailsPage() {
                     throw new Error('No auth token found');
                 }
 
-                const response = await fetch(`http://localhost:5000/api/memorials/${id}`, {
+                const response = await fetch(`https://webgrave.onrender.com/api/memorials/${id}`, {
                     method: 'DELETE',
                     headers: {
                       'Authorization': `Bearer ${token}`
@@ -1009,7 +1009,7 @@ export default function MemorialDetailsPage() {
                 return;
             }
 
-            const response = await fetch('http://localhost:5000/api/flowers/complete', {
+            const response = await fetch('https://webgrave.onrender.com/api/flowers/complete', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1053,7 +1053,7 @@ export default function MemorialDetailsPage() {
                 return;
             }
 
-            const response = await fetch('http://localhost:5000/api/flowers/send', {
+            const response = await fetch('https://webgrave.onrender.com/api/flowers/send', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

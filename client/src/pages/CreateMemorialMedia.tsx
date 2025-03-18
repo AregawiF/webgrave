@@ -41,7 +41,7 @@ const CreateMemorialMedia = () => {
     }
 
     try {
-        const response = await fetch(`http://localhost:5000/api/memorials/media/${id}`, {
+        const response = await fetch(`https://webgrave.onrender.com/api/memorials/media/${id}`, {
             method: 'PUT',
             body: formData,
             headers: {

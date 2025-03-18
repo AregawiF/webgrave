@@ -45,7 +45,7 @@ export default function MyMemorials() {
   useEffect(() => {
     const fetchMemorials = async () => {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5000/api/memorials/my-memorials', {
+      const response = await fetch('https://webgrave.onrender.com/api/memorials/my-memorials', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

@@ -50,7 +50,7 @@ const PaymentSuccess = () => {
       const verifyPayment = async () => {
         try {
           const token = localStorage.getItem('authToken');
-          const response = await fetch('http://localhost:5000/api/payment/verifyPayment', {
+          const response = await fetch('https://webgrave.onrender.com/api/payment/verifyPayment', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ const PaymentSuccess = () => {
             formData.append('causeOfDeath', JSON.stringify(causeOfDeath));
 
             // Make the request to create the memorial
-            const createResponse = await fetch('http://localhost:5000/api/memorials', {
+            const createResponse = await fetch('https://webgrave.onrender.com/api/memorials', {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`

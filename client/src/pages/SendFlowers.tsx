@@ -30,7 +30,7 @@ const SendFlowers: React.FC = () => {
   useEffect(() => {
     const fetchMemorialDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/memorials/${id}`);
+        const response = await fetch(`https://webgrave.onrender.com/api/memorials/${id}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch memorial details');
@@ -62,7 +62,7 @@ const SendFlowers: React.FC = () => {
     
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5000/api/flowers/${id}`, {
+      const response = await fetch(`https://webgrave.onrender.com/api/flowers/${id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -26,7 +26,7 @@ const EditMemorial: React.FC = () => {
     const fetchMemorialDetails = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`http://localhost:5000/api/memorials/${id}`, {
+        const response = await fetch(`https://webgrave.onrender.com/api/memorials/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -55,7 +55,7 @@ const EditMemorial: React.FC = () => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5000/api/memorials/${id}`, {
+      const response = await fetch(`https://webgrave.onrender.com/api/memorials/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

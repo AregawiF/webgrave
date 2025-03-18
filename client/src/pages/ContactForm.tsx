@@ -69,7 +69,7 @@ const ContactForm: React.FC = () => {
     try {
       setStatus('sending');
       
-      const response = await fetch('http://localhost:5000/api/contact', {
+      const response = await fetch('https://webgrave.onrender.com/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

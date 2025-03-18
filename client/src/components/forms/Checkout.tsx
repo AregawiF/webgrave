@@ -8,7 +8,7 @@ const Checkout = ({onSuccess}: {onSuccess: ()=> void} ) => {
 
     const createOrder = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/payment/create-paypal-order", {
+            const response = await fetch("https://webgrave.onrender.com/api/payment/create-paypal-order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ amount: "50.00" }),
@@ -28,7 +28,7 @@ const Checkout = ({onSuccess}: {onSuccess: ()=> void} ) => {
         console.log("capturing order")
 
         try {
-            const response = await fetch("http://localhost:5000/api/payment/capture-paypal-order", {
+            const response = await fetch("https://webgrave.onrender.com/api/payment/capture-paypal-order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ orderID }),

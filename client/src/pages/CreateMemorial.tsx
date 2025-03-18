@@ -10,7 +10,7 @@ const CreateMemorial: React.FC = () => {
       const token = localStorage.getItem('authToken');
 
       const amount = 20; 
-      const response = await fetch("http://localhost:5000/api/payment/create-stripe-payment", {
+      const response = await fetch("https://webgrave.onrender.com/api/payment/create-stripe-payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

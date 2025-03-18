@@ -26,7 +26,7 @@ const Profile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/auth/profile', {
+                const response = await fetch('https://webgrave.onrender.com/api/auth/profile', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
@@ -51,7 +51,7 @@ const Profile = () => {
         const isConfirmed = window.confirm('Are you sure you want to delete your profile? This action cannot be undone.');
         if (!isConfirmed) return;
         try {
-            const response = await fetch('http://localhost:5000/api/auth/delete-profile', {
+            const response = await fetch('https://webgrave.onrender.com/api/auth/delete-profile', {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`

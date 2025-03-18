@@ -20,7 +20,7 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
         }
 
         // Verify admin status by attempting to fetch the admin dashboard data
-        const response = await fetch('http://localhost:5000/api/admin/dashboard', {
+        const response = await fetch('https://webgrave.onrender.com/api/admin/dashboard', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

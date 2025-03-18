@@ -55,7 +55,7 @@ const AdminPanel = () => {
 
   const fetchUsers = async () => {
     const token = localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:5000/api/admin/users', {
+    const response = await fetch('https://webgrave.onrender.com/api/admin/users', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -75,7 +75,7 @@ const AdminPanel = () => {
 
   const fetchAllTributes = async () =>{
     const token = localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:5000/api/admin/tributes', {
+    const response = await fetch('https://webgrave.onrender.com/api/admin/tributes', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -117,7 +117,7 @@ const AdminPanel = () => {
               setIsAdmin(true);
 
               // Fetch stats
-              const statsResponse = await fetch('http://localhost:5000/api/admin/dashboard', {
+              const statsResponse = await fetch('https://webgrave.onrender.com/api/admin/dashboard', {
                 headers: {
                   'Authorization': `Bearer ${token}`,
                 },
@@ -216,7 +216,7 @@ const AdminPanel = () => {
     const isConfirmed = window.confirm('Are you sure you want to delete your profile? This action cannot be undone.');
     if (!isConfirmed) return;
     try {
-        const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+        const response = await fetch(`https://webgrave.onrender.com/api/admin/users/${userId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -237,7 +237,7 @@ const AdminPanel = () => {
       if (!isConfirmed) return;
       const token = localStorage.getItem('authToken');
       try {
-        const response = await fetch(`http://localhost:5000/api/admin/tributes/${flowerId}`, {
+        const response = await fetch(`https://webgrave.onrender.com/api/admin/tributes/${flowerId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
