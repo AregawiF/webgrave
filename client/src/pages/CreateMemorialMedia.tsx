@@ -9,8 +9,6 @@ const CreateMemorialMedia = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  console.log(id);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
@@ -34,7 +32,6 @@ const CreateMemorialMedia = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('Submitting media files:', mediaFiles);
     setLoading(true);
 
     const formData = new FormData();
@@ -76,8 +73,15 @@ const CreateMemorialMedia = () => {
   }
 
   return (
-    <div>
-        <div onClick={() => navigate(`/memorial/${id}`)} className="text-primary-500 cursor-pointer">Go to created memorial</div>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10 px-4">
+        <div className="max-w-2xl w-full bg-white shadow-md rounded-lg p-6">
+
+        <button 
+          onClick={() => navigate(`/memorial/${id}`)}
+          className="text-primary-500 cursor-pointer"
+        >
+          ← Go to Memorial
+        </button>
         <form onSubmit={handleSubmit} className="space-y-8">
         <div>
             <h2 className="text-2xl font-bold text-gray-900">Upload Additional Media</h2>
@@ -87,16 +91,6 @@ const CreateMemorialMedia = () => {
         </div>
 
         <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
-            Media Files
-            </label>
-            <input
-            type="file"
-            multiple
-            accept="image/*,video/*"
-            onChange={handleFileChange}
-            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-            />
             <ul className="space-y-2">
             {mediaFiles.map((file, index) => (
                 <li key={index} className="flex items-center">
@@ -118,7 +112,7 @@ const CreateMemorialMedia = () => {
         <div className="space-y-4">
             <div className="flex items-center justify-between">
             <h3 className="text-lg font-medium text-gray-900">Additional Media</h3>
-            <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+            <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-50 text-primary-700 hover:bg-primary-600 hover:text-white">
                 <Upload className="mr-2 h-4 w-4" />
                 Add Files
                 <input
@@ -171,6 +165,7 @@ const CreateMemorialMedia = () => {
             Submit Media
         </button>
         </form>
+        </div>
     </div>
   );
 };

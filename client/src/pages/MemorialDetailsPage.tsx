@@ -6,6 +6,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 interface MediaFile {
     type: 'photo' | 'video';
     url: string;
+    file?: File;
 }
 
 interface MemorialDetails {
@@ -163,37 +164,51 @@ export default function MemorialDetailsPage() {
     }
 
  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'mainPicture' | 'additionalMedia') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-        if (fieldName === 'mainPicture') {
+    if (fieldName === 'mainPicture') {
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
             setMainPicturePreview(reader.result as string);
-        } else {
-             setAdditionalMediaPreviews(prevPreviews => [...prevPreviews, reader.result as string]);
-
-        }
-    };
-    reader.readAsDataURL(file);
-
-    setEditedMemorial(prev => {
-        if (!prev) return null;
-        if (fieldName === 'mainPicture') {
-            return { ...prev, mainPicture: file };
-        } else {
-            const newMedia = { type: file.type.startsWith('image') ? 'photo' : 'video', file };
-            return { ...prev, additionalMedia: [...(prev.additionalMedia || []), newMedia] };
-        }
-    });
+            setEditedMemorial(prev => {
+                if (!prev) return null;
+                return { ...prev, mainPicture: file };
+            });
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // Handle multiple files for additionalMedia
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAdditionalMediaPreviews(prev => [...prev, reader.result as string]);
+                setEditedMemorial(prev => {
+                    if (!prev) return null;
+                    const newMedia = { 
+                        type: file.type.startsWith('image') ? 'photo' : 'video', 
+                        url: reader.result as string,
+                        file // Store the actual file object
+                    };
+                    return { 
+                        ...prev, 
+                        additionalMedia: [...(prev.additionalMedia || []), newMedia] 
+                    };
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 };
 
     const handleSave = async () => {
         if (!editedMemorial) return;
-  
+
         try {
             const formData = new FormData();
   
+            // Append basic information
             formData.append('fullName', editedMemorial.fullName);
             if (editedMemorial.nickname) formData.append('nickName', editedMemorial.nickname); 
             if (editedMemorial.maidenName) formData.append('maidenName', editedMemorial.maidenName);
@@ -207,15 +222,18 @@ export default function MemorialDetailsPage() {
             if (editedMemorial.serviceLocation) formData.append('serviceLocation', editedMemorial.serviceLocation);
             if (editedMemorial.serviceDetails) formData.append('serviceDetails', editedMemorial.serviceDetails);
             
+            // Append dates
             if (editedMemorial.birthDate) formData.append('birthDate', new Date(editedMemorial.birthDate).toISOString());
             if (editedMemorial.deathDate) formData.append('deathDate', new Date(editedMemorial.deathDate).toISOString());
             if (editedMemorial.serviceDate) formData.append('serviceDate', new Date(editedMemorial.serviceDate).toISOString());
   
+            // Append boolean fields
             formData.append('isPublic', String(!!editedMemorial.isPublic));
             formData.append('birthdayReminder', String(!!editedMemorial.birthdayReminder));
             formData.append('militaryService', String(!!editedMemorial.militaryService));
             formData.append('enableDigitalFlowers', String(!!editedMemorial.enableDigitalFlowers));
   
+            // Append arrays and objects
             if (editedMemorial.languages && editedMemorial.languages.length > 0) {
                 formData.append('languagesSpoken', JSON.stringify(editedMemorial.languages));
             }
@@ -232,6 +250,7 @@ export default function MemorialDetailsPage() {
                 formData.append('causeOfDeath', JSON.stringify(editedMemorial.causeOfDeath));
             }
   
+            // Handle main picture
             if (editedMemorial.mainPicture instanceof File) {
                 formData.append('mainPicture', editedMemorial.mainPicture);
             } else if (mainPicturePreview && mainPicturePreview.startsWith('data:')) {
@@ -239,30 +258,28 @@ export default function MemorialDetailsPage() {
                 formData.append('mainPicture', blob, 'main_picture.jpg');
             }
   
-            if (editedMemorial.additionalMedia && editedMemorial.additionalMedia.length > 0) {
-                let newMediaCount = 0;
-                for (const media of editedMemorial.additionalMedia) {
-                    if (media.file) {
-                        formData.append('additionalMedia', media.file);
-                        newMediaCount++;
-                    }
+            // Handle additional media
+            // Only append files that are newly added (have a file property)
+            const newMediaFiles = editedMemorial.additionalMedia.filter(media => media.file);
+            newMediaFiles.forEach((media, index) => {
+                if (media.file) {
+                    formData.append('additionalMedia', media.file, `media-${index}`);
                 }
-                    // Append the existing media file's URLs to the form too.
-                    const existingMediaURLS = editedMemorial.additionalMedia
-                      .filter(media => media.url)
-                      .map(media => media.url);
-           
-                      formData.append('existingMedia', JSON.stringify(existingMediaURLS));
-           
-            }
-  
+            });
+
+            // Add existing media URLs that should be kept
+            const existingMediaToKeep = editedMemorial.additionalMedia
+                .filter(media => !media.file)
+                .map(media => ({ type: media.type, url: media.url }));
+            
+            // Send the list of media to keep
+            formData.append('existingMedia', JSON.stringify(existingMediaToKeep));
+
             const token = localStorage.getItem('authToken');
             if (!token) {
                 throw new Error('No auth token found');
             }
-  
-            console.log('Sending update with formData:', Object.fromEntries(formData));
-  
+    
             const response = await fetch(`http://localhost:5000/api/memorials/${id}`, {
                 method: 'PUT',
                 body: formData,
@@ -293,7 +310,7 @@ export default function MemorialDetailsPage() {
             setMainPicturePreview(parsedData.mainPicture);
             setAdditionalMediaPreviews(parsedData.additionalMedia.map(media => media.url));
             
-            alert('Memorial updated successfully');
+            setSuccess('Memorial updated successfully');
   
         } catch (err: any) {
             console.error('Update error:', err);
@@ -956,7 +973,8 @@ export default function MemorialDetailsPage() {
                                     type="file"
                                     id="additionalMedia"
                                     name="additionalMedia"
-                                     onChange={(e) => handleFileChange(e, 'additionalMedia')}
+                                    accept="image/*,video/*"
+                                    onChange={(e) => handleFileChange(e, 'additionalMedia')}
                                     multiple
                                     className="mt-1"
                                 />

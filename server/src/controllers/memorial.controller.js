@@ -126,12 +126,12 @@ exports.getMemorialById = async (req, res) => {
 // Update a memorial
 exports.updateMemorial = async (req, res) => {
   console.log('Update memorial:', req.body);
-  try {
-      const memorial = await Memorial.findById(req.params.id);
+    try {
+        const memorial = await Memorial.findById(req.params.id);
 
-      if (!memorial) {
-          return res.status(404).json({ message: 'Memorial not found' });
-      }
+        if (!memorial) {
+            return res.status(404).json({ message: 'Memorial not found' });
+        }
 
       console.log('user role:', req.user.role);
 
@@ -140,13 +140,13 @@ exports.updateMemorial = async (req, res) => {
           return res.status(403).json({ message: 'Access denied' });
       }
 
-      const updates = { ...req.body };
+        const updates = { ...req.body };
 
       // Handle main picture update
-      if (req.files?.mainPicture) {
-          const mainPictureResult = await uploadCloudinary(req.files.mainPicture[0].path);
-          updates.mainPicture = mainPictureResult.secure_url;
-      }
+        if (req.files?.mainPicture) {
+            const mainPictureResult = await uploadCloudinary(req.files.mainPicture[0].path);
+            updates.mainPicture = mainPictureResult.secure_url;
+        }
 
       // Parse dates - No need to convert if they're already in ISO format
       // if (updates.birthDate) updates.birthDate = new Date(updates.birthDate); //Remove, date is ISOString
@@ -165,30 +165,47 @@ exports.updateMemorial = async (req, res) => {
       if (req.body.enableDigitalFlowers !== undefined) updates.enableDigitalFlowers = req.body.enableDigitalFlowers === 'true';
       if (req.body.isPublic !== undefined) updates.isPublic = req.body.isPublic === 'true';
 
-      // Handle additional media
-      if (req.files?.additionalMedia) {
-          const mediaPromises = req.files.additionalMedia.map(async (file) => {
-              const result = await uploadCloudinary(file.path);
-              return {
-                  type: file.mimetype.startsWith('image/') ? 'photo' : 'video',
-                  url: result.secure_url
-              };
-          });
-          const newMedia = await Promise.all(mediaPromises);
-          updates.additionalMedia = [...(memorial.additionalMedia || []), ...newMedia];
+      // Handle existing media that should be kept
+      let existingMedia = [];
+      if (req.body.existingMedia) {
+          try {
+              existingMedia = JSON.parse(req.body.existingMedia);
+          } catch (err) {
+              console.error('Error parsing existingMedia:', err);
+          }
       }
 
-      const updatedMemorial = await Memorial.findByIdAndUpdate(
-          req.params.id,
-          updates,
-          { new: true, runValidators: true }
-      ).populate('createdBy', 'name email');
+      // Handle additional media
+        if (req.files?.additionalMedia) {
+            const mediaPromises = req.files.additionalMedia.map(async (file) => {
+                const result = await uploadCloudinary(file.path);
+                return {
+                    type: file.mimetype.startsWith('image/') ? 'photo' : 'video',
+                    url: result.secure_url
+                };
+            });
+            const newMedia = await Promise.all(mediaPromises);
+            
+            // Combine existing media with new media
+            updates.additionalMedia = [...existingMedia, ...newMedia];
+        } else {
+            // If no new media is uploaded, just use the existing media
+            updates.additionalMedia = existingMedia;
+        }
 
-      res.json(updatedMemorial);
-  } catch (error) {
-      console.error('Update memorial error:', error);
-      res.status(400).json({ message: error.message });
-  }
+        console.log('Final updates:', updates);
+
+        const updatedMemorial = await Memorial.findByIdAndUpdate(
+            req.params.id,
+            updates,
+            { new: true, runValidators: true }
+        );
+
+        res.json(updatedMemorial);
+    } catch (error) {
+        console.error('Update memorial error:', error);
+        res.status(400).json({ message: error.message });
+    }
 };
 
 // Delete a memorial

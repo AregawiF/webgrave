@@ -59,7 +59,6 @@ export default function MyMemorials() {
       }
 
       const data = await response.json();
-      console.log('Api response:', data);
       setMemorials(data.memorials);
       setLoading(false);
     };
