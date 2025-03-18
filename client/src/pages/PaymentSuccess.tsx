@@ -36,7 +36,7 @@ const PaymentSuccess = () => {
         // Try to get memorial ID if we saved it
         const createdMemorialId = localStorage.getItem(`memorial_for_session_${sessionId}`);
         if (createdMemorialId) {
-          navigate(`/memorial/${createdMemorialId}`);
+          navigate(`/add-memorial-media/${createdMemorialId}`);
         } else {
           navigate('/my-memorials');
         }
@@ -81,15 +81,6 @@ const PaymentSuccess = () => {
             if (memorialData.profileImage) {
               const profileImageBlob = await base64ToBlob(memorialData.profileImage);
               formData.append('mainPicture', profileImageBlob, 'profile.jpg');
-            }
-
-            // Convert base64 media files to Blobs
-            if (memorialData.mediaFiles && memorialData.mediaFiles.length > 0) {
-              for (let i = 0; i < memorialData.mediaFiles.length; i++) {
-                const mediaFile = memorialData.mediaFiles[i];
-                const mediaBlob = await base64ToBlob(mediaFile.url);
-                formData.append('additionalMedia', mediaBlob, `media_${i}.${mediaFile.type === 'image' ? 'jpg' : 'mp4'}`);
-              }
             }
 
             // Add basic memorial information
@@ -168,7 +159,7 @@ const PaymentSuccess = () => {
             
             // Navigate to the new memorial's details page
             setIsProcessing(false);
-            navigate(`/memorial/${memorial._id}`);
+            navigate(`/add-memorial-media/${memorial._id}`);
           } else {
             setErrorMessage(data.message || 'Payment verification failed.');
             setIsProcessing(false);

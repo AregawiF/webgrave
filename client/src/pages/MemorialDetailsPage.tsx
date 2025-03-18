@@ -1088,7 +1088,7 @@ export default function MemorialDetailsPage() {
         />
          {isEditing && (
                 <div className="absolute top-2 right-2 z-10">
-                    <input type="file" onChange={(e) => handleFileChange(e, 'mainPicture')} />
+                    <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'mainPicture')} />
                 </div>
             )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />

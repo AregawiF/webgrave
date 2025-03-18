@@ -39,7 +39,6 @@ export function MemorialForm({ onSubmit }: Props) {
     hobbies: [],
     favoriteQuote: '',
     charities: [],
-    mediaFiles: [],
     causeOfDeath: '',
     disasterTag: '',
     disasterType: '',
@@ -107,30 +106,6 @@ export function MemorialForm({ onSubmit }: Props) {
         profileImage: URL.createObjectURL(file)
       }));
     }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const newFiles = Array.from(files).map(file => ({
-        type: file.type.startsWith('image/') ? 'image' : 
-              file.type.startsWith('video/') ? 'video' : 'document',
-        url: URL.createObjectURL(file),
-        caption: ''
-      }));
-      
-      setFormData(prev => ({
-        ...prev,
-        mediaFiles: [...prev.mediaFiles, ...newFiles]
-      }));
-    }
-  };
-
-  const removeFile = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      mediaFiles: prev.mediaFiles.filter((_, i) => i !== index)
-    }));
   };
 
   return (
@@ -391,58 +366,8 @@ export function MemorialForm({ onSubmit }: Props) {
         errors={errors}
       />
 
-      {/* Media Gallery */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium text-gray-900">Additional Media</h3>
-          <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
-            <Upload className="mr-2 h-4 w-4" />
-            Add Files
-            <input
-              type="file"
-              multiple
-              accept="image/*,video/*,.pdf,.doc,.docx"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </label>
-        </div>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {formData.mediaFiles.map((file, index) => (
-            <div key={index} className="relative group">
-              {file.type === 'video' ? (
-                <video
-                  src={file.url}
-                  controls
-                  className="h-32 w-full object-cover rounded-lg"
-                />
-              ) : file.type === 'image' ? (
-                <img
-                  src={file.url}
-                  alt="Memorial media"
-                  className="h-32 w-full object-cover rounded-lg"
-                />
-              ) : (
-                <div className="h-32 w-full flex items-center justify-center bg-gray-100 rounded-lg">
-                  <span className="text-gray-500">Document</span>
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => removeFile(index)}
-                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Digital Flowers Section */}
-      <div className="space-y-4 border-t pt-4">
+      <div className="space-y-4 pt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <input

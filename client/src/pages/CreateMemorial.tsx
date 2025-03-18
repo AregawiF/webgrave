@@ -61,16 +61,6 @@ const CreateMemorial: React.FC = () => {
         localStorageData.profileImage = await fileToBase64(data.profileImage);
       }
       
-      // Convert media files to base64 for localStorage
-      if (data.mediaFiles && data.mediaFiles.length > 0) {
-        const mediaFilesPromises = data.mediaFiles.map(async (file: any) => ({
-          ...file,
-          url: await fileToBase64(file.url)
-        }));
-        
-        localStorageData.mediaFiles = await Promise.all(mediaFilesPromises);
-      }
-      
       // Store in localStorage
       localStorage.setItem('memorialFormData', JSON.stringify(localStorageData));
       

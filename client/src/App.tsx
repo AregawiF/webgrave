@@ -23,6 +23,7 @@ import FlowerPaymentCancel from './pages/FlowerPaymentCancel';
 import AdminPanel from './pages/AdminPanel';
 import AdminRoute from './components/AdminRoute';
 import Profile from './pages/Profile';
+import CreateMemorialMedia from './pages/CreateMemorialMedia';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -79,6 +80,14 @@ const App: React.FC = () => {
             <Route 
               path="/send-flowers/:id" 
               element={<SendFlowers />} 
+            />
+            <Route 
+              path="/add-memorial-media/:id" 
+              element={
+                <PrivateRoute>
+                  <CreateMemorialMedia />
+                </PrivateRoute>
+              }
             />
             <Route path="/contact" element={<ContactForm />} />
             <Route 

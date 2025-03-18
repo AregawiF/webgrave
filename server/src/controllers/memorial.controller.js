@@ -246,14 +246,45 @@ exports.addTribute = async (req, res) => {
   }
 };
 
-// Remove media from a memorial
-exports.removeMedia = async (req, res) => {
+// // Remove media from a memorial
+// exports.removeMedia = async (req, res) => {
+//   try {
+//     const { id, mediaId } = req.params;
+//     const memorial = await Memorial.findById(id);
+
+//     if (!memorial) {
+//       return res.status(404).json({ message: 'Memorial not found' });
+//     }
+
+//     // Check if user is the creator
+//     if (req.user.userId.toString() !== memorial.createdBy.toString() && req.user.role !== 'admin') {
+//       return res.status(403).json({ message: 'Access denied' });
+//     }
+
+//     memorial.additionalMedia = memorial.additionalMedia.filter(
+//       media => media._id.toString() !== mediaId
+//     );
+
+//     await memorial.save();
+//     res.json(memorial);
+//   } catch (error) {
+//     console.error('Remove media error:', error);
+//     res.status(400).json({ message: error.message });
+//   }
+// };
+
+// Add media for a memorial
+exports.addMedia = async (req, res) => {
   try {
-    const { id, mediaId } = req.params;
+    const { id } = req.params;
     const memorial = await Memorial.findById(id);
 
     if (!memorial) {
       return res.status(404).json({ message: 'Memorial not found' });
+    }
+
+    if (!req.files?.additionalMedia) {
+      return res.status(400).json({ message: 'No files uploaded' });
     }
 
     // Check if user is the creator
@@ -261,14 +292,19 @@ exports.removeMedia = async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    memorial.additionalMedia = memorial.additionalMedia.filter(
-      media => media._id.toString() !== mediaId
-    );
-
+    const mediaPromises = req.files.additionalMedia.map(async (file) => {
+      const result = await uploadCloudinary(file.path);
+      return {
+        type: file.mimetype.startsWith('image/') ? 'photo' : 'video',
+        url: result.secure_url
+      };
+    });
+    const newMedia = await Promise.all(mediaPromises);
+    memorial.additionalMedia = [...(memorial.additionalMedia || []), ...newMedia];
     await memorial.save();
-    res.json(memorial);
+    res.status(200).json(memorial);
   } catch (error) {
-    console.error('Remove media error:', error);
+    console.error('Add media error:', error);
     res.status(400).json({ message: error.message });
   }
 };
