@@ -11,15 +11,6 @@ const FlowerPaymentSuccess = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (sessionId) {
-      completeFlowerPayment(sessionId);
-    } else {
-      setLoading(false);
-      setErrorMessage('No session ID found. Unable to verify your payment.');
-    }
-  }, [sessionId]);
-
   const completeFlowerPayment = async (sessionId: string) => {
     try {
       const token = localStorage.getItem('authToken');
@@ -52,17 +43,24 @@ const FlowerPaymentSuccess = () => {
         }
       } else {
         // Use a generic user-friendly error message instead of showing technical details
-        console.error('Payment verification error:', data.error || 'Unknown error');
+        // console.error('Payment verification error:', data.error || 'Unknown error');
         setErrorMessage('We couldn\'t verify your payment. Please contact support if this issue persists.');
       }
     } catch (err: any) {
       // Log the actual error but show a generic message to the user
-      console.error('Payment completion error:', err);
+      // console.error('Payment completion error:', err);
       setErrorMessage('An unexpected error occurred. Please try again or contact support.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (sessionId) {
+    completeFlowerPayment(sessionId);
+  } else {
+    setLoading(false);
+    setErrorMessage('No session ID found. Unable to verify your payment.');
+  }
 
   if (loading) {
     return (
@@ -81,29 +79,29 @@ const FlowerPaymentSuccess = () => {
     );
   }
 
-  if (errorMessage) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-md p-6 bg-white rounded-xl shadow-md">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-500 mx-auto">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </div>
-            <h1 className="mt-4 text-xl font-semibold text-gray-900">Payment Verification Failed</h1>
-            <p className="mt-2 text-gray-600">{errorMessage}</p>
-            <div className="mt-6">
-              <Link to="/" className="inline-flex items-center text-indigo-600 hover:text-indigo-800">
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Return to Home
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (errorMessage) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+  //       <div className="w-full max-w-md p-6 bg-white rounded-xl shadow-md">
+  //         <div className="text-center">
+  //           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-500 mx-auto">
+  //             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  //               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  //             </svg>
+  //           </div>
+  //           <h1 className="mt-4 text-xl font-semibold text-gray-900">Payment Verification Failed</h1>
+  //           <p className="mt-2 text-gray-600">{errorMessage}</p>
+  //           <div className="mt-6">
+  //             <Link to="/" className="inline-flex items-center text-indigo-600 hover:text-indigo-800">
+  //               <ArrowLeft className="h-4 w-4 mr-1" />
+  //               Return to Home
+  //             </Link>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">

@@ -39,7 +39,7 @@ const sendFlowerTribute = async (req, res) => {
           price_data: {
             currency: "usd",
             product_data: { 
-              name: `Flower Tribute for ${memorial.fullName}'s Memorial`,
+              name: message || `Flower Tribute for ${memorial.fullName}'s Memorial`,
               description: message || 'Digital flower tribute'
             },
             unit_amount: amount * 100, // Convert to cents
@@ -141,7 +141,6 @@ const completeFlowerTribute = async (req, res) => {
           message: message,
           amount,
           senderId: senderId,
-          isAnonymous: !req.user
         }},
         $inc: { 'totalTributes.amount': amount, 'totalTributes.count': 1 }
       }
