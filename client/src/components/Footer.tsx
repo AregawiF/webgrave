@@ -9,6 +9,7 @@ export default function Footer() {
             © {new Date().getFullYear()} WebGrave. All rights reserved.
           </p>
           <SocialLinks />
+          
         </div>
       </div>
     </footer>
