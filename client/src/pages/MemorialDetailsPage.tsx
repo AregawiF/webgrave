@@ -81,6 +81,7 @@ export default function MemorialDetailsPage() {
     const [editedMemorial, setEditedMemorial] = useState<MemorialDetails | null>(null);
     const [mainPicturePreview, setMainPicturePreview] = useState<string | null>(null);
     const [additionalMediaPreviews, setAdditionalMediaPreviews] = useState<string[]>([]);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null); // State for modal image
 
     const fetchMemorial = async () => {
         setLoading(true);
@@ -921,7 +922,9 @@ export default function MemorialDetailsPage() {
                         {editedMemorial?.additionalMedia.map((file, index) => (
                             <div key={index} className="group relative rounded-xl overflow-hidden bg-gray-50">
                                 {file.type === 'photo' ? (
-                                    <div className="aspect-w-4 aspect-h-3">
+                                    <div className="aspect-w-4 aspect-h-3 " onClick={(e) => { 
+                                        e.stopPropagation();
+                                        setSelectedImage(additionalMediaPreviews[index] || file.url) }} >
                                         <img
                                             src={additionalMediaPreviews[index] || file.url}
                                             alt={file.caption || `Media ${index}`}
@@ -1382,6 +1385,31 @@ export default function MemorialDetailsPage() {
                     </div>
                 </div>
             </div>
+             {/* Modal for Image Preview */}
+             {selectedImage && (
+                <div
+                    className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+                    onClick={() => {
+                        setSelectedImage(null); // Close modal on background click
+                    }}
+                >
+                    <div
+                        className="relative max-w-3xl mx-auto p-4"
+                        onClick={(e) => e.stopPropagation()} // Prevent close on image click
+                    >
+                        <button
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2"
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent event from bubbling up
+                                setSelectedImage(null); // Close button
+                            }}
+                        >
+                            <X size={24} />
+                        </button>
+                        <img src={selectedImage} alt="Preview" className="max-h-[80vh] max-w-full rounded-lg" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

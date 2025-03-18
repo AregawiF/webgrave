@@ -82,7 +82,7 @@ exports.getAllTributes = async (req, res) => {
 
       let receiver = null;
       if (memorial) {
-        receiver = await User.findById(memorial.createdBy).select('-password -role -_id');
+        receiver = await User.findById(memorial.createdBy).select('-password');
       }
 
       return {
@@ -95,7 +95,6 @@ exports.getAllTributes = async (req, res) => {
       };
     }));
 
-    console.log(tributes);
     res.json({
       tributes,
       total

@@ -226,8 +226,7 @@ const AdminPanel = () => {
         if (!response.ok) {
             throw new Error(data.message || 'Failed to delete profile');
         }
-        localStorage.removeItem('authToken');
-        navigate('/signup');
+        fetchUsers();
     } catch (error:any) {
         setError(error.message);
     }
@@ -310,6 +309,7 @@ const AdminPanel = () => {
             <h2 className="text-xl font-semibold mb-4 col-span-1">Users</h2>
               <div className="space-y-4">
                 {users.map(user => (
+                  user &&
                   <div key={user._id} className="bg-gray-50 p-4 rounded-lg shadow">
                     <div className="flex items-center justify-between">
                       <div>
@@ -332,13 +332,14 @@ const AdminPanel = () => {
               <h2 className="text-xl font-semibold mb-4">Tributes</h2>
               <p className="text-lg font-medium">Number of Flowers: {numberOfTributes}</p>
               {tributes && tributes.map(tribute => (
+                tribute &&
                 <div key={tribute._id} className="bg-gray-50 p-4 rounded-lg shadow">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-700">Reciever: {tribute.receiver.firstName} {tribute.receiver.lastName}</p>
-                      <p className="text-sm text-gray-700">Reciever Email: {tribute.receiver.email}</p>
-                      <p className="text-sm text-gray-700">Sender: {tribute.sender.firstName} {tribute.sender.lastName}</p>
-                      <p className="text-sm text-gray-700">Sender Email: {tribute.sender.email}</p>
+                      <p className="text-sm text-gray-700">Reciever: {tribute.receiver ? tribute.receiver.firstName : 'Unknown'} {tribute.receiver ? tribute.receiver.lastName : 'Unknown'}</p>
+                      <p className="text-sm text-gray-700">Reciever Email: {tribute.receiver ? tribute.receiver.email : 'Unknown'}</p>
+                      <p className="text-sm text-gray-700">Sender: {tribute.sender ? tribute.sender.firstName : 'Unknown'} {tribute.sender ? tribute.sender.lastName : 'Unknown'}</p>
+                      <p className="text-sm text-gray-700">Sender Email: {tribute.sender ? tribute.sender.email : 'Unknown'}</p>
                       <p className="text-sm text-gray-700">Amount: ${tribute.amount}</p>
                       <p className="text-sm text-gray-700">Transaction Id: {tribute.transactionId}</p>
                       <p className="text-sm text-gray-500">Created At: {new Date(tribute.createdAt).toLocaleDateString('en-US', { 
