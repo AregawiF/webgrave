@@ -302,24 +302,23 @@ const AdminPanel = () => {
 
         {/* Simple dashboard info */}
         <div className="bg-white rounded-lg shadow p-6">
-
-          <div className='grid grid-cols-3 gap-4'>
-            <div>
-            {/* show list of users with delete option */}
-            <h2 className="text-xl font-semibold mb-4 col-span-1">Users</h2>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            {/* Users Section */}
+            <div className="md:col-span-1">
+              <h2 className="text-xl font-semibold mb-4">Users</h2>
               <div className="space-y-4">
                 {users.map(user => (
                   user &&
                   <div key={user._id} className="bg-gray-50 p-4 rounded-lg shadow">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
                       <div>
                         <p className="text-lg font-medium">{user.firstName} {user.lastName}</p>
                         <p className="text-sm text-gray-500">{user.email}</p>
                       </div>
                       <button
                         onClick={() => handleDeleteUser(user._id)}
-                        className="bg-red-500 text-white px-4 py-2 rounded-md font-medium hover:bg-red-600 transition-colors"
-                        >
+                        className="bg-red-500 text-white px-4 py-2 mt-2 md:mt-0 rounded-md font-medium hover:bg-red-600 transition-colors"
+                      >
                         Delete
                       </button>
                     </div>
@@ -327,41 +326,43 @@ const AdminPanel = () => {
                 ))}
               </div>
             </div>
-            {/* show list of tributes */}
-            <div className="space-y-4 col-span-2">
+
+            {/* Tributes Section */}
+            <div className="md:col-span-2">
               <h2 className="text-xl font-semibold mb-4">Tributes</h2>
               <p className="text-lg font-medium">Number of Flowers: {numberOfTributes}</p>
-              {tributes && tributes.map(tribute => (
-                tribute &&
-                <div key={tribute._id} className="bg-gray-50 p-4 rounded-lg shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-700">Reciever: {tribute.receiver ? tribute.receiver.firstName : 'Unknown'} {tribute.receiver ? tribute.receiver.lastName : 'Unknown'}</p>
-                      <p className="text-sm text-gray-700">Reciever Email: {tribute.receiver ? tribute.receiver.email : 'Unknown'}</p>
-                      <p className="text-sm text-gray-700">Sender: {tribute.sender ? tribute.sender.firstName : 'Unknown'} {tribute.sender ? tribute.sender.lastName : 'Unknown'}</p>
-                      <p className="text-sm text-gray-700">Sender Email: {tribute.sender ? tribute.sender.email : 'Unknown'}</p>
-                      <p className="text-sm text-gray-700">Amount: ${tribute.amount}</p>
-                      <p className="text-sm text-gray-700">Transaction Id: {tribute.transactionId}</p>
-                      <p className="text-sm text-gray-500">Created At: {new Date(tribute.createdAt).toLocaleDateString('en-US', { 
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}</p>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteTribute(tribute._id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded-md font-medium hover:bg-red-600 transition-colors"
+              <div className="space-y-4">
+                {tributes && tributes.map(tribute => (
+                  tribute &&
+                  <div key={tribute._id} className="bg-gray-50 p-4 rounded-lg shadow">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-700">Receiver: {tribute.receiver ? `${tribute.receiver.firstName} ${tribute.receiver.lastName}` : 'Unknown'}</p>
+                        <p className="text-sm text-gray-700">Receiver Email: {tribute.receiver?.email || 'Unknown'}</p>
+                        <p className="text-sm text-gray-700">Sender: {tribute.sender ? `${tribute.sender.firstName} ${tribute.sender.lastName}` : 'Unknown'}</p>
+                        <p className="text-sm text-gray-700">Sender Email: {tribute.sender?.email || 'Unknown'}</p>
+                        <p className="text-sm text-gray-700">Amount: ${tribute.amount}</p>
+                        <p className="text-sm text-gray-700">Transaction Id: {tribute.transactionId}</p>
+                        <p className="text-sm text-gray-500">Created At: {new Date(tribute.createdAt).toLocaleDateString('en-US', { 
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteTribute(tribute._id)}
+                        className="bg-red-500 text-white px-4 py-2 mt-2 md:mt-0 rounded-md font-medium hover:bg-red-600 transition-colors"
                       >
-                      Delete record
-                    </button>
+                        Delete record
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

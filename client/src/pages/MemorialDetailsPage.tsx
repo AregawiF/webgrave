@@ -575,7 +575,7 @@ export default function MemorialDetailsPage() {
                     </div>
                     <div className="flex justify-center">
                       <QRCode
-                        value={`https://webgrave.com/memorial/${memorial._id}`}
+                        value={`https://web-grave.com/memorial/${memorial._id}`}
                         size={128}
                         level="H"
                         includeMargin={true}

@@ -124,7 +124,7 @@ export default function OldAboutUs() {
 
                   <div className="flex items-center">
                     <Mail className="h-5 w-5 text-primary-600 mr-3" />
-                    <p className="text-gray-600">contact@webgrave.com</p>
+                    <p className="text-gray-600">info@web-grave.com</p>
                   </div>
                 </div>
               </div>
