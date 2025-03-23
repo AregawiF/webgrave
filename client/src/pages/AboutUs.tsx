@@ -14,34 +14,17 @@ const AboutUs: React.FC = () => {
       description: "Unique QR codes connect physical memorial sites to rich digital content, allowing visitors to learn more about your loved ones."
     },
     {
+      icon: Users,
+      title: "Connect Families",
+      description: "Our family connection feature helps preserve genealogical information and connects related memorials automatically."
+    },
+    {
       icon: Shield,
       title: "Secure & Private",
       description: "Advanced privacy controls ensure sensitive information is only visible to authorized family members."
     }
   ];
 
-  const howItWorks = [
-    {
-      step: 1,
-      title: "Create an Account",
-      description: "Sign up and verify your email to get started."
-    },
-    {
-      step: 2,
-      title: "Enter Memorial Information",
-      description: "Provide details about your loved one, including photos, stories, and family connections."
-    },
-    {
-      step: 3,
-      title: "Generate QR Code",
-      description: "Receive a unique QR code that can be added to physical memorials or shared with family."
-    },
-    {
-      step: 4,
-      title: "Share & Connect",
-      description: "Invite family members to contribute memories and connect related memorials."
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -55,10 +38,36 @@ const AboutUs: React.FC = () => {
           </p>
         </div>
 
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12">
+          <div className="bg-white shadow-lg rounded-lg p-8 text-center">
+            <Heart className="mx-auto h-12 w-12 text-primary-600 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Our Mission</h3>
+            <p className="text-gray-600">
+              To create a compassionate digital space that celebrates life stories, preserves memories, and provides comfort to those grieving.
+            </p>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-8 text-center">
+            <Globe className="mx-auto h-12 w-12 text-primary-600 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Global Remembrance</h3>
+            <p className="text-gray-600">
+              Connect with loved ones across the world, share stories, and keep memories alive through our intuitive digital memorial platform.
+            </p>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-8 text-center">
+            <Users className="mx-auto h-12 w-12 text-primary-600 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Community Support</h3>
+            <p className="text-gray-600">
+              Build a supportive community around memories, share tributes, and find solace in collective remembrance.
+            </p>
+          </div>
+        </div>
+
         {/* Benefits */}
         <div>
             <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Why Choose WebGrave?</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {benefits.map((benefit, index) => (
                 <div key={index} className="bg-white rounded-xl p-6 shadow-sm">
                   <benefit.icon className="h-8 w-8 text-primary-600 mb-4" />
@@ -69,25 +78,6 @@ const AboutUs: React.FC = () => {
             </div>
           </div>
 
-          {/* How It Works */}
-          <div className="bg-white rounded-xl p-8 shadow-sm">
-            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">How It Works</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {howItWorks.map((step) => (
-                <div key={step.step} className="relative">
-                  <div className="flex items-center justify-center">
-                    <span className="h-12 w-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xl font-bold">
-                      {step.step}
-                    </span>
-                  </div>
-                  <h4 className="text-lg font-semibold text-gray-900 text-center mt-4 mb-2">
-                    {step.title}
-                  </h4>
-                  <p className="text-gray-600 text-center">{step.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
 
         <div className="mt-16 bg-white shadow-lg rounded-lg overflow-hidden">
           <div className="px-4 py-5 sm:p-6">

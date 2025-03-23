@@ -18,7 +18,31 @@ export default function Home() {
     navigate('/scan-code');
   }
 
+  const howItWorks = [
+      {
+        step: 1,
+        title: "Create an Account",
+        description: "Sign up and verify your email to get started."
+      },
+      {
+        step: 2,
+        title: "Enter Memorial Information",
+        description: "Provide details about your loved one, including photos, stories, and family connections."
+      },
+      {
+        step: 3,
+        title: "Generate QR Code",
+        description: "Receive a unique QR code that can be added to physical memorials or shared with family."
+      },
+      {
+        step: 4,
+        title: "Share & Connect",
+        description: "Invite family members to contribute memories and connect related memorials."
+      }
+    ];
+
   return (
+  <div className='relative overflow-hidden bg-primary-50/50'>
     <div className="relative bg-white overflow-hidden ">
       <div className="absolute inset-0 bg-primary-50/50" />
       <div className="max-w-7xl mx-auto">
@@ -63,5 +87,25 @@ export default function Home() {
         </div>
       </div>
     </div>
+    {/* How It Works */}
+    <div className=" rounded-xl p-8 py-28 shadow-sm">
+      <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">How It Works</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {howItWorks.map((step) => (
+          <div key={step.step} className="relative">
+            <div className="flex items-center justify-center">
+              <span className="h-12 w-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xl font-bold">
+                {step.step}
+              </span>
+            </div>
+            <h4 className="text-lg font-semibold text-gray-900 text-center mt-4 mb-2">
+              {step.title}
+            </h4>
+            <p className="text-gray-600 text-center">{step.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>    
+  </div>
   );
 }
