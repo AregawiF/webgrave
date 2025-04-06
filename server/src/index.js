@@ -29,7 +29,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/payment', paymentRoutes);
+app.use('/api/payments', paymentRoutes);
 app.use('/api/memorials', memorialRoutes);
 app.use('/api/flowers', flowerRoutes);
 app.use('/api/contact', contactRoutes);
