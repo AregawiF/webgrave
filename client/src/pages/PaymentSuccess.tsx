@@ -197,7 +197,7 @@ const PaymentSuccess: React.FC = () => {
         setIsProcessing(false);
         setErrorMessage(null); // Clear any previous transient errors
         // Navigate to the next step, passing the new memorial's ID
-        navigate(`/add-memorial-media/${memorial.data._id}`); // Adjust if memorial data structure is different
+        navigate(`/add-memorial-media/${memorial._id}`); // Adjust if memorial data structure is different
 
       } else {
         // Handle non-successful verification (e.g., status is 'failed', 'pending', 'unpaid', or verifyData.success is false)
