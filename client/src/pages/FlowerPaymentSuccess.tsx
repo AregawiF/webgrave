@@ -45,7 +45,12 @@ const FlowerPaymentSuccess = () => {
 
         // Get flower tribute data from localStorage
         const storedTributeData = localStorage.getItem('flowerTributeData');
+        console.log('Retrieved stored tribute data:', storedTributeData);
+        
         if (!storedTributeData) {
+          console.error('No tribute data found in localStorage');
+          // Check all localStorage keys to help debug
+          console.log('All localStorage keys:', Object.keys(localStorage));
           throw new Error('Flower tribute data not found after successful payment. Please contact support.');
         }
 

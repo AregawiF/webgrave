@@ -70,7 +70,12 @@ const SendFlowers: React.FC = () => {
       }
 
       // Store tribute data in localStorage for use after payment
-      localStorage.setItem('flowerTributeData', JSON.stringify(tribute));
+      console.log('Storing tribute data:', tribute);
+      localStorage.setItem('flowerTributeData', JSON.stringify({
+        memorialId: id, // Make sure we store the actual memorial ID
+        amount: tribute.amount,
+        message: tribute.message
+      }));
 
       // Initiate PayFast payment
       const response = await fetch('https://webgrave.onrender.com/api/payments/create-payfast-payment', {
