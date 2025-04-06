@@ -1002,6 +1002,12 @@ export default function MemorialDetailsPage() {
                 return;
             }
 
+            localStorage.setItem('flowerTributeData', JSON.stringify({
+                memorialId: id, 
+                amount: donation,
+                message: tributeMessage
+              }));
+        
             const response = await fetch('https://webgrave.onrender.com/api/payments/create-payfast-payment', {
                 method: 'POST',
                 headers: {
