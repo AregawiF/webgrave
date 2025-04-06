@@ -20,10 +20,6 @@ const flowerSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  transactionId: {
-    type: String,
-    unique: true
-  },
   createdAt: {
     type: Date,
     default: Date.now
