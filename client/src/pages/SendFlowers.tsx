@@ -71,7 +71,6 @@ const SendFlowers: React.FC = () => {
 
       // Store tribute data in localStorage for use after payment
       localStorage.setItem('flowerTributeData', JSON.stringify({
-        memorialId: id,
         ...tribute
       }));
 
