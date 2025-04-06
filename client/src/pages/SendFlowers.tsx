@@ -59,26 +59,58 @@ const SendFlowers: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`https://webgrave.onrender.com/api/flowers/${id}`, {
+      if (!token) {
+        throw new Error('Please log in to send flowers');
+      }
+
+      // Store tribute data in localStorage for use after payment
+      localStorage.setItem('flowerTributeData', JSON.stringify({
+        memorialId: id,
+        ...tribute
+      }));
+
+      // Initiate PayFast payment
+      const response = await fetch('https://webgrave.onrender.com/api/payments/create-payfast-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(tribute)
+        body: JSON.stringify({
+          amount: tribute.amount,
+          orderType: 'flower_tribute',
+          memorialId: id
+        })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send flower tribute');
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to initiate payment');
       }
 
-      // Redirect to memorial details page after successful tribute
-      navigate(`/memorial/${id}`);
+      const { payfastUrl, formData } = await response.json();
+
+      // Create and submit the PayFast form
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = payfastUrl;
+
+      Object.entries(formData).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value as string;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while sending flowers');
+      setError(err instanceof Error ? err.message : 'An error occurred while processing payment');
     }
   };
 

@@ -112,7 +112,7 @@ const CreateMemorialMedia = () => {
         <div className="space-y-4">
             <div className="flex items-center justify-between">
             <h3 className="text-lg font-medium text-gray-900">Additional Media</h3>
-            <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-50 text-primary-700 hover:bg-primary-600 hover:text-white">
+            <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-500 text-primary-700 hover:bg-primary-600 hover:text-white">
                 <Upload className="mr-2 h-4 w-4" />
                 Add Files
                 <input

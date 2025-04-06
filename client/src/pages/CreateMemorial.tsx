@@ -182,7 +182,6 @@ const CreateMemorial: React.FC = () => {
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<string | null>(null); // Add error state
 
-  // --- Helper function to submit the PayFast form ---
   const submitPayFastForm = (payfastUrl: string, formData: { [key: string]: string }) => {
     const form = document.createElement('form');
     form.method = 'POST';
@@ -201,10 +200,7 @@ const CreateMemorial: React.FC = () => {
 
     document.body.appendChild(form);
     form.submit();
-    // No need to remove the form immediately, submission causes navigation
-    // document.body.removeChild(form); // You might want to clean up later if needed
   };
-  // --- End Helper Function ---
 
   // Renamed from handleStripeCheckout
   const initiatePayFastPayment = async () => {
@@ -224,9 +220,8 @@ const CreateMemorial: React.FC = () => {
         },
         body: JSON.stringify({
           amount: amount,
-          // Optional: Pass item name/description if you want dynamic values
-          // itemName: "WebGrave Memorial Creation",
-          // itemDescription: `Payment for creating a new memorial`,
+          orderType: 'memorial_creation',
+          memorialId: ''
          }),
       });
 

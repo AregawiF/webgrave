@@ -42,27 +42,46 @@ const generateSignature = (data, passphrase = null) => {
  */
 exports.createPayfastPayment = async (req, res) => {
     try {
-        const { amount } = req.body;
-        const itemName = "Memorial Payment";
-        const itemDescription = "Payment for creating a memorial";
-        const userId = req.user.userId; 
+        const { amount, orderType, memorialId } = req.body;
+        const userId = req.user.userId;
 
+        // Validate input
         if (!amount || amount <= 0) {
             return res.status(400).json({ error: "Invalid amount specified." });
         }
         if (!userId) {
-             return res.status(401).json({ error: "User not authenticated." });
+            return res.status(401).json({ error: "User not authenticated." });
+        }
+        if (!orderType || !['memorial_creation', 'flower_tribute'].includes(orderType)) {
+            return res.status(400).json({ error: "Invalid order type." });
+        }
+        if (orderType === 'flower_tribute' && !memorialId) {
+            return res.status(400).json({ error: "Memorial ID is required for flower tributes." });
         }
 
-        const order = await Order.create({
+        // Set item details based on order type
+        const itemName = orderType === 'memorial_creation' ? "Memorial Creation" : "Flower Tribute";
+        const itemDescription = orderType === 'memorial_creation' 
+            ? "Payment for creating a memorial" 
+            : "Payment for sending a flower tribute";
+
+        // Create order with type-specific fields
+        const orderData = {
             status: 'unpaid',
-            amount: amount,
-            userId: userId,
-        });
+            orderType,
+            amount,
+            userId
+        };
 
-        const orderId = order._id.toString(); // Use MongoDB's _id as the unique payment ID
+        // Add flower tribute specific fields
+        if (orderType === 'flower_tribute') {
+            orderData.memorialId = memorialId;
+        }
 
-        // 2. Prepare data for PayFast form
+        const order = await Order.create(orderData);
+
+        const orderId = order._id.toString(); 
+
         const paymentData = {
             merchant_id: PAYFAST_MERCHANT_ID,
             merchant_key: PAYFAST_MERCHANT_KEY,
@@ -75,12 +94,17 @@ exports.createPayfastPayment = async (req, res) => {
             item_description: itemDescription,
         };
 
-        // 3. Generate Signature (using data *without* the signature field itself)
+        
+        // /flower-payment/success
+
+        if (orderType === 'flower_tribute') {
+            paymentData.return_url = `${FRONTEND_URL}/flower-payment/success?order_id=${orderId}`;
+            paymentData.cancel_url = `${FRONTEND_URL}/flower-payment/cancel?order_id=${orderId}`;
+        }
+
         const signature = generateSignature(paymentData, PAYFAST_PASSPHRASE);
         paymentData.signature = signature; // Add signature to the data object
 
-        // 4. Send PayFast URL and payment data back to the frontend
-        // The frontend will create and submit a form with this data.
         console.log('submitting data' , paymentData);
         res.json({
             payfastUrl: PAYFAST_PROCESS_URL,

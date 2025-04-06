@@ -4,65 +4,131 @@ import { CheckCircle, ArrowLeft, Flower2 } from 'lucide-react';
 
 const FlowerPaymentSuccess = () => {
   const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('session_id');
-  const [loading, setLoading] = useState(true);
+  const orderId = searchParams.get('order_id');
+  const [isProcessing, setIsProcessing] = useState(true);
   const [memorialId, setMemorialId] = useState<string | null>(null);
   const [memorialName, setMemorialName] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 5;
+  const RETRY_DELAY = 2000; // 2 seconds
   const navigate = useNavigate();
 
-  const completeFlowerPayment = async (sessionId: string) => {
+  const verifyPaymentAndCreateTribute = async () => {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        setErrorMessage('Authentication required. Please log in again.');
-        setLoading(false);
-        return;
+        throw new Error('Authentication token not found');
       }
 
-      const response = await fetch('https://webgrave.onrender.com/api/flowers/complete', {
+      if (!orderId) {
+        throw new Error('No order ID found in URL');
+      }
+
+      // Verify payment status
+      const response = await fetch('https://webgrave.onrender.com/api/payments/verify-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ sessionId })
+        body: JSON.stringify({ orderId })
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // If we have memorial info in the response, save it
-        if (data.tribute && data.tribute.memorialId) {
-          setMemorialId(data.tribute.memorialId);
-        }
-        
-        // Try to get memorial name if available
-        if (data.memorialName) {
-          setMemorialName(data.memorialName);
-        }
-      } else {
-        // Use a generic user-friendly error message instead of showing technical details
-        // console.error('Payment verification error:', data.error || 'Unknown error');
-        setErrorMessage('We couldn\'t verify your payment. Please contact support if this issue persists.');
+      if (!response.ok) {
+        throw new Error('Failed to verify payment');
       }
-    } catch (err: any) {
-      // Log the actual error but show a generic message to the user
-      // console.error('Payment completion error:', err);
-      setErrorMessage('An unexpected error occurred. Please try again or contact support.');
-    } finally {
-      setLoading(false);
+
+      const verifyData = await response.json();
+
+      if (verifyData.success && verifyData.status === 'paid') {
+        console.log('Payment verified successfully. Processing flower tribute.');
+
+        // Get flower tribute data from localStorage
+        const storedTributeData = localStorage.getItem('flowerTributeData');
+        if (!storedTributeData) {
+          throw new Error('Flower tribute data not found after successful payment. Please contact support.');
+        }
+
+        const tributeData = JSON.parse(storedTributeData);
+        setMemorialId(tributeData.memorialId);
+
+        // Create the flower tribute
+        const tributeResponse = await fetch(`https://webgrave.onrender.com/api/flowers/${tributeData.memorialId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            amount: tributeData.amount
+          })
+        });
+
+        if (!tributeResponse.ok) {
+          const errorData = await tributeResponse.json();
+          console.error('Payment successful, but failed to create tribute:', errorData);
+          throw new Error(errorData.message || 'Payment succeeded, but failed to save tribute details. Please contact support.');
+        }
+
+        const tribute = await tributeResponse.json();
+        console.log('Flower tribute created successfully:', tribute);
+
+        // Clean up localStorage
+        localStorage.removeItem('flowerTributeData');
+
+        setIsProcessing(false);
+        setErrorMessage(null);
+        navigate(`/memorial/${tributeData.memorialId}`);
+
+      } else {
+        // Handle non-successful verification
+        if (retryCount < MAX_RETRIES) {
+          console.log(`Payment not yet confirmed. Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+            verifyPaymentAndCreateTribute();
+          }, RETRY_DELAY);
+        } else {
+          throw new Error('Payment verification timeout. Please contact support.');
+        }
+      }
+    } catch (err) {
+      console.error('Error processing flower tribute:', err);
+      setErrorMessage(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setIsProcessing(false);
     }
   };
 
-  if (sessionId) {
-    completeFlowerPayment(sessionId);
-  } else {
-    setLoading(false);
-    setErrorMessage('No session ID found. Unable to verify your payment.');
+  useEffect(() => {
+    verifyPaymentAndCreateTribute();
+  }, []);
+
+  if (errorMessage) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md p-6 bg-white rounded-xl shadow-md">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-500 mx-auto">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <h1 className="mt-4 text-xl font-semibold text-gray-900">Payment Verification Failed</h1>
+            <p className="mt-2 text-gray-600">{errorMessage}</p>
+            <div className="mt-6">
+              <Link to="/" className="inline-flex items-center text-indigo-600 hover:text-indigo-800">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Return to Home
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  if (loading) {
+  if (isProcessing) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md p-6 bg-white rounded-xl shadow-md">
@@ -78,30 +144,6 @@ const FlowerPaymentSuccess = () => {
       </div>
     );
   }
-
-  // if (errorMessage) {
-  //   return (
-  //     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-  //       <div className="w-full max-w-md p-6 bg-white rounded-xl shadow-md">
-  //         <div className="text-center">
-  //           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-500 mx-auto">
-  //             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-  //               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  //             </svg>
-  //           </div>
-  //           <h1 className="mt-4 text-xl font-semibold text-gray-900">Payment Verification Failed</h1>
-  //           <p className="mt-2 text-gray-600">{errorMessage}</p>
-  //           <div className="mt-6">
-  //             <Link to="/" className="inline-flex items-center text-indigo-600 hover:text-indigo-800">
-  //               <ArrowLeft className="h-4 w-4 mr-1" />
-  //               Return to Home
-  //             </Link>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
