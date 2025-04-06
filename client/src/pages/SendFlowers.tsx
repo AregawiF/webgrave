@@ -12,6 +12,7 @@ interface Memorial {
 
 interface FlowerTribute {
   amount: number;
+  memorialId: string;
   message?: string;
 }
 
@@ -22,6 +23,7 @@ const SendFlowers: React.FC = () => {
   const [memorial, setMemorial] = useState<Memorial | null>(null);
   const [tribute, setTribute] = useState<FlowerTribute>({
     amount: 10,
+    memorialId: id || '',
     message: ''
   });
   const [isLoading, setIsLoading] = useState(true);

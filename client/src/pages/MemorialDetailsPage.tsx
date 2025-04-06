@@ -164,44 +164,44 @@ export default function MemorialDetailsPage() {
       setEditedMemorial(prev => (prev ? { ...prev, [name]: newArray } : null));
     }
 
- const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'mainPicture' | 'additionalMedia') => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'mainPicture' | 'additionalMedia') => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
-    if (fieldName === 'mainPicture') {
-        const file = files[0];
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setMainPicturePreview(reader.result as string);
-            setEditedMemorial(prev => {
-                if (!prev) return null;
-                return { ...prev, mainPicture: file };
-            });
-        };
-        reader.readAsDataURL(file);
-    } else {
-        // Handle multiple files for additionalMedia
-        Array.from(files).forEach(file => {
+        if (fieldName === 'mainPicture') {
+            const file = files[0];
             const reader = new FileReader();
             reader.onloadend = () => {
-                setAdditionalMediaPreviews(prev => [...prev, reader.result as string]);
+                setMainPicturePreview(reader.result as string);
                 setEditedMemorial(prev => {
                     if (!prev) return null;
-                    const newMedia = { 
-                        type: file.type.startsWith('image') ? 'photo' : 'video', 
-                        url: reader.result as string,
-                        file // Store the actual file object
-                    };
-                    return { 
-                        ...prev, 
-                        additionalMedia: [...(prev.additionalMedia || []), newMedia] 
-                    };
+                    return { ...prev, mainPicture: file };
                 });
             };
             reader.readAsDataURL(file);
-        });
-    }
-};
+        } else {
+            // Handle multiple files for additionalMedia
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setAdditionalMediaPreviews(prev => [...prev, reader.result as string]);
+                    setEditedMemorial(prev => {
+                        if (!prev) return null;
+                        const newMedia = { 
+                            type: file.type.startsWith('image') ? 'photo' : 'video', 
+                            url: reader.result as string,
+                            file // Store the actual file object
+                        };
+                        return { 
+                            ...prev, 
+                            additionalMedia: [...(prev.additionalMedia || []), newMedia] 
+                        };
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    };
 
     const handleSave = async () => {
         if (!editedMemorial) return;
@@ -358,7 +358,7 @@ export default function MemorialDetailsPage() {
 
         return { ...prev, [section]: updatedSection };
     });
-};
+    };
 
     const renderTabContent = () => {
       if (!memorial) return null;
@@ -987,56 +987,6 @@ export default function MemorialDetailsPage() {
                 </div>
             );
     }
-};
-
-    // Check URL params for payment success/cancel
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const paymentSuccess = params.get('payment_success');
-        const sessionId = params.get('session_id');
-
-        if (paymentSuccess === 'true' && sessionId) {
-            completeFlowerPayment(sessionId);
-        }
-    }, [location]);
-
-    // Complete the flower payment process
-    const completeFlowerPayment = async (sessionId: string) => {
-        try {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                setError('You must be logged in to complete this action');
-                return;
-            }
-
-            const response = await fetch('https://webgrave.onrender.com/api/flowers/complete', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ sessionId })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setSuccess('Thank you for your flower tribute!');
-                
-                // Refresh memorial data to show new tribute
-                if (id) {
-                    fetchMemorial(); 
-                }
-                
-                // Clean up the URL
-                const cleanUrl = location.pathname;
-                navigate(cleanUrl, { replace: true });
-            } else {
-                setError(data.error || 'Failed to complete payment process');
-            }
-        } catch (err: any) {
-            setError(err.message || 'An error occurred during payment completion');
-        }
     };
 
     // Send flower tribute
@@ -1048,36 +998,50 @@ export default function MemorialDetailsPage() {
         try {
             const token = localStorage.getItem('authToken');
             if (!token) {
-                // Redirect to login if not authenticated
                 navigate('/login', { state: { from: location.pathname, message: 'Please log in to send flowers' } });
                 return;
             }
 
-            const response = await fetch('https://webgrave.onrender.com/api/flowers/send', {
+            const response = await fetch('https://webgrave.onrender.com/api/payments/create-payfast-payment', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    memorialId: id,
                     amount: donation,
-                    message: tributeMessage
+                    orderType: 'flower_tribute',
+                    memorialId: id,
                 })
             });
 
-            const data = await response.json();
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to initiate payment');
+              }
+        
+            const { payfastUrl, formData } = await response.json();
+    
+            if (!payfastUrl || !formData) {
+                throw new Error('Received invalid data from payment server.');
+             }
+             
+            // Create and submit the PayFast form
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = payfastUrl;
+    
+            Object.entries(formData).forEach(([key, value]) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value as string;
+            form.appendChild(input);
+            });
+    
+            document.body.appendChild(form);
+            form.submit();
 
-            if (response.ok) {
-                // Redirect to Stripe checkout
-                window.location.href = data.url;
-            } else {
-                if (data.redirectToLogin) {
-                    navigate('/login', { state: { from: location.pathname, message: 'Please log in to send flowers' } });
-                } else {
-                    setError(data.error || 'Failed to send flower tribute');
-                }
-            }
         } catch (err: any) {
             setError(err.message || 'An error occurred');
         } finally {

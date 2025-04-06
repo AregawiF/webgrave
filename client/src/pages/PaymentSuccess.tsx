@@ -73,7 +73,6 @@ const PaymentSuccess: React.FC = () => {
       if (!orderId) {
         throw new Error('Payment identifier (order ID) not found in URL. Cannot verify payment.');
       }
-      // --- End Update ---
 
       console.log(`Verifying payment for order ID: ${orderId}`); // Debug log
 
@@ -86,7 +85,6 @@ const PaymentSuccess: React.FC = () => {
         },
         body: JSON.stringify({ orderId: orderId }) // <-- Send orderId instead of checkoutId
       });
-      // --- End Update ---
 
       const verifyData = await verifyResponse.json();
 

@@ -7,7 +7,6 @@ const FlowerPaymentSuccess = () => {
   const orderId = searchParams.get('order_id');
   const [isProcessing, setIsProcessing] = useState(true);
   const [memorialId, setMemorialId] = useState<string | null>(null);
-  const [memorialName, setMemorialName] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const MAX_RETRIES = 5;
@@ -32,7 +31,7 @@ const FlowerPaymentSuccess = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ orderId })
+        body: JSON.stringify({ orderId: orderId })
       });
 
       if (!response.ok) {
@@ -54,14 +53,16 @@ const FlowerPaymentSuccess = () => {
         setMemorialId(tributeData.memorialId);
 
         // Create the flower tribute
-        const tributeResponse = await fetch(`https://webgrave.onrender.com/api/flowers/${tributeData.memorialId}`, {
+        const tributeResponse = await fetch(`https://webgrave.onrender.com/api/flowers/send`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            amount: tributeData.amount
+            memorialId: tributeData.memorialId,
+            amount: tributeData.amount,
+            message: tributeData.message,
           })
         });
 
@@ -172,7 +173,7 @@ const FlowerPaymentSuccess = () => {
                 onClick={() => navigate(`/memorial/${memorialId}`)}
                 className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
               >
-                Return to {memorialName || 'Memorial'} Page
+                Return to Memorial Page
               </button>
             )}
             
