@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Globe, Users, Shield, QrCode } from 'lucide-react';
+import { Heart, Globe, Users, Shield, QrCode, Mail, Briefcase } from 'lucide-react';
 
 const AboutUs: React.FC = () => {
   const benefits = [
@@ -66,17 +66,17 @@ const AboutUs: React.FC = () => {
 
         {/* Benefits */}
         <div>
-            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Why Choose WebGrave?</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {benefits.map((benefit, index) => (
-                <div key={index} className="bg-white rounded-xl p-6 shadow-sm">
-                  <benefit.icon className="h-8 w-8 text-primary-600 mb-4" />
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2">{benefit.title}</h4>
-                  <p className="text-gray-600">{benefit.description}</p>
-                </div>
-              ))}
-            </div>
+          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Why Choose WebGrave?</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {benefits.map((benefit, index) => (
+              <div key={index} className="bg-white rounded-xl p-6 shadow-sm">
+                <benefit.icon className="h-8 w-8 text-primary-600 mb-4" />
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">{benefit.title}</h4>
+                <p className="text-gray-600">{benefit.description}</p>
+              </div>
+            ))}
           </div>
+        </div>
 
 
         <div className="mt-16 bg-white shadow-lg rounded-lg overflow-hidden">
@@ -92,6 +92,77 @@ const AboutUs: React.FC = () => {
             </div>
           </div>
         </div>
+
+        <details className="mt-20 bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer group">
+          <summary className="text-xl font-semibold text-gray-900 px-6 py-4 flex justify-between items-center hover:bg-gray-100">
+            <span className="flex items-center">
+              <Users className="mr-2 h-6 w-6 text-primary-600" />
+              Grow With Us
+            </span>
+            <span className="text-primary-600 group-open:rotate-180 transition-transform">&#x25BC;</span>
+          </summary>
+
+          <div className="px-6 pb-8 pt-4 space-y-6 text-sm text-gray-700">
+            <p>
+              WebGrave is more than just a platform — it's a community. We're building a space where innovation meets compassion, and we’re looking for talented, driven individuals who want to help shape the future of digital memorials.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="p-4 border rounded-lg">
+                <h3 className="flex items-center text-base font-semibold text-gray-800 mb-2">
+                  <Briefcase className="mr-2 h-5 w-5 text-primary-500" />
+                  IT Engineers
+                </h3>
+                <p>Passionate about secure, scalable systems and innovative tech? Let's talk.</p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h3 className="flex items-center text-base font-semibold text-gray-800 mb-2">
+                  <Globe className="mr-2 h-5 w-5 text-primary-500" />
+                  Marketers
+                </h3>
+                <p>Have a knack for storytelling and digital growth? We need your voice.</p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h3 className="flex items-center text-base font-semibold text-gray-800 mb-2">
+                  <Users className="mr-2 h-5 w-5 text-primary-500" />
+                  Sales Professionals
+                </h3>
+                <p>Believe in relationships and purpose-driven work? Join us on our mission.</p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="text-base font-semibold text-gray-800 mb-1">Affiliate Opportunities</h4>
+              <p>
+                Help others create meaningful digital memorials — and build income through impact as an affiliate.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="text-base font-semibold text-gray-800 mb-1">Location & Flexibility</h4>
+              <p>
+                Remote-friendly for most roles. Some positions may require location-specific availability — include your location when applying.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <h4 className="text-base font-semibold text-gray-800 mb-2">Ready to Apply?</h4>
+              <p className="mb-4">
+                Send your CV, portfolio (if applicable), and a short intro to{' '}
+                <a href="mailto:info@web-grave.com" className="text-primary-600 underline">info@web-grave.com</a>{' '}
+                or reach us on our contact page.
+              </p>
+              <button
+                onClick={() => window.location.href = '/contact'}
+                className="inline-flex items-center px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+              >
+                <Mail className="mr-2 h-5 w-5" />
+                Go to Contact Page
+              </button>
+            </div>
+          </div>
+        </details>
+
 
         <div className="mt-16 text-center">
           <blockquote className="text-2xl italic text-gray-600 max-w-3xl mx-auto">

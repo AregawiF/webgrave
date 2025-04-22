@@ -93,9 +93,6 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, setIsAuthenticated }) 
           <Link to="/contact" className={`flex items-center ${isActive('/contact')}`}>
             <MessageCircle className="mr-2 h-5 w-5" /> Contact
           </Link>
-          <Link to="/grow-with-us" className={`flex items-center ${isActive('/grow-with-us')}`}>
-            <Rocket className="mr-2 h-5 w-5" /> Grow with us
-          </Link>
 
           {!isAuthenticated ? (
             <div className="flex items-center space-x-4">
@@ -163,9 +160,6 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, setIsAuthenticated }) 
           </Link>
           <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center my-2`}>
             Contact
-          </Link>
-          <Link to="/grow-with-us" onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center my-2`}>
-            Grow with us
           </Link>
 
           {!isAuthenticated ? (

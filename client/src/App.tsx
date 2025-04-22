@@ -9,7 +9,6 @@ import MemorialDetailsPage from './pages/MemorialDetailsPage';
 import EditMemorial from './pages/EditMemorial';
 import SendFlowers from './pages/SendFlowers';
 import ContactForm from './pages/ContactForm';
-import GrowWithUs from './pages/GrowWithUs';
 import PrivateRoute from './components/PrivateRoute';
 import AboutUs from './pages/AboutUs';
 import Home from './pages/Home';
@@ -91,7 +90,6 @@ const App: React.FC = () => {
               }
             />
             <Route path="/contact" element={<ContactForm />} />
-            <Route path="/grow-with-us" element={<GrowWithUs />} />
             <Route 
               path="/create-memorial" 
               element={
