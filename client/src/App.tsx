@@ -24,6 +24,7 @@ import AdminPanel from './pages/AdminPanel';
 import AdminRoute from './components/AdminRoute';
 import Profile from './pages/Profile';
 import CreateMemorialMedia from './pages/CreateMemorialMedia';
+import TermsAndConditions from './pages/TermsAndConditions';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -66,6 +67,7 @@ const App: React.FC = () => {
             <Route path="/login" element={<Login onLoginSuccess={() => setIsAuthenticated(true)} />} />
             <Route path="/signup" element={<Signup onSignupSuccess={() => setIsAuthenticated(true)} />} />
             <Route path="/about" element={<AboutUs />} />
+            <Route path="/terms_and_conditions" element={<TermsAndConditions />} />
             <Route path="/find-memorials" element={<FindMemorial />} />
             <Route path="/scan-code" element={<ScanCode />} />
             <Route path="/" element={<Home />} />
