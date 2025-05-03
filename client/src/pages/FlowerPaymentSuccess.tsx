@@ -24,78 +24,50 @@ const FlowerPaymentSuccess = () => {
         throw new Error('No order ID found in URL');
       }
 
-      // Verify payment status
-      const response = await fetch('https://webgrave.onrender.com/api/payments/verify-payment', {
+      console.log('Payment verified successfully. Processing flower tribute.');
+
+      // Get flower tribute data from localStorage
+      const storedTributeData = localStorage.getItem('flowerTributeData');
+
+      if (!storedTributeData) {
+        console.error('No tribute data found in localStorage');
+        throw new Error('Flower tribute data not found after successful payment. Please contact support.');
+      }
+
+      const tributeData = JSON.parse(storedTributeData);
+      setMemorialId(tributeData.memorialId);
+
+      // Create the flower tribute
+      const tributeResponse = await fetch(`http://localhost:5000/api/flowers/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ orderId: orderId })
+        body: JSON.stringify({
+          memorialId: tributeData.memorialId,
+          amount: tributeData.amount,
+          message: tributeData.message,
+        })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to verify payment');
+      if (!tributeResponse.ok) {
+        const errorData = await tributeResponse.json();
+        console.error('Payment successful, but failed to create tribute:', errorData);
+        throw new Error(errorData.message || 'Payment succeeded, but failed to save tribute details. Please contact support.');
       }
 
-      const verifyData = await response.json();
+      const tribute = await tributeResponse.json();
+      console.log('Flower tribute created successfully:', tribute);
 
-      if (verifyData.success && verifyData.status === 'paid') {
-        console.log('Payment verified successfully. Processing flower tribute.');
+      // Clean up localStorage
+      localStorage.removeItem('flowerTributeData');
 
-        // Get flower tribute data from localStorage
-        const storedTributeData = localStorage.getItem('flowerTributeData');
-        
-        if (!storedTributeData) {
-          console.error('No tribute data found in localStorage');
-          throw new Error('Flower tribute data not found after successful payment. Please contact support.');
-        }
+      setIsProcessing(false);
+      setErrorMessage(null);
+      navigate(`/memorial/${tributeData.memorialId}`);
 
-        const tributeData = JSON.parse(storedTributeData);
-        setMemorialId(tributeData.memorialId);
 
-        // Create the flower tribute
-        const tributeResponse = await fetch(`https://webgrave.onrender.com/api/flowers/send`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            memorialId: tributeData.memorialId,
-            amount: tributeData.amount,
-            message: tributeData.message,
-          })
-        });
-
-        if (!tributeResponse.ok) {
-          const errorData = await tributeResponse.json();
-          console.error('Payment successful, but failed to create tribute:', errorData);
-          throw new Error(errorData.message || 'Payment succeeded, but failed to save tribute details. Please contact support.');
-        }
-
-        const tribute = await tributeResponse.json();
-        console.log('Flower tribute created successfully:', tribute);
-
-        // Clean up localStorage
-        localStorage.removeItem('flowerTributeData');
-
-        setIsProcessing(false);
-        setErrorMessage(null);
-        navigate(`/memorial/${tributeData.memorialId}`);
-
-      } else {
-        // Handle non-successful verification
-        if (retryCount < MAX_RETRIES) {
-          console.log(`Payment not yet confirmed. Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1);
-            verifyPaymentAndCreateTribute();
-          }, RETRY_DELAY);
-        } else {
-          throw new Error('Payment verification timeout. Please contact support.');
-        }
-      }
     } catch (err) {
       console.error('Error processing flower tribute:', err);
       setErrorMessage(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -155,10 +127,10 @@ const FlowerPaymentSuccess = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-500 mx-auto">
             <CheckCircle className="h-10 w-10" />
           </div>
-          
+
           <h1 className="mt-4 text-2xl font-bold text-gray-900">Thank You!</h1>
           <p className="mt-2 text-lg text-gray-600">Your flower tribute has been sent successfully.</p>
-          
+
           <div className="mt-6 p-4 bg-indigo-50 rounded-lg">
             <div className="flex items-center justify-center mb-3">
               <Flower2 className="h-6 w-6 text-indigo-600 mr-2" />
@@ -168,18 +140,18 @@ const FlowerPaymentSuccess = () => {
               Your tribute has been recorded and will appear on the memorial page.
             </p>
           </div>
-          
+
           <div className="mt-8 flex flex-col space-y-3">
             {memorialId && (
-              <button 
+              <button
                 onClick={() => navigate(`/memorial/${memorialId}`)}
                 className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
               >
                 Return to Memorial Page
               </button>
             )}
-            
-            <Link 
+
+            <Link
               to="/"
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
             >
