@@ -87,7 +87,8 @@ exports.getAllMemorials = async (req, res) => {
       search,
       status,
       isPublic,
-      createdBy
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
     } = req.query;
 
     const query = {};
@@ -101,16 +102,19 @@ exports.getAllMemorials = async (req, res) => {
     }
     if (status) query.status = status;
     if (isPublic !== undefined) query.isPublic = isPublic === 'true';
-    if (createdBy) query.createdBy = createdBy;
 
     // Get total count for pagination
     const total = await Memorial.countDocuments(query);
 
+    // Prepare sort options
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+
     // Get paginated results
     const memorials = await Memorial.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .sort(sortOptions)
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit))
       .populate('createdBy', 'name email')
       .select('-tributes'); // Exclude tributes for list view
 
@@ -140,7 +144,26 @@ exports.getMemorialById = async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    res.json(memorial);
+    // Sort tributes by date (newest first)
+    memorial.tributes = [...memorial.tributes].sort((a, b) => 
+      new Date(b.date) - new Date(a.date)
+    );
+
+    // Paginate tributes
+    const { page = 1, limit = 10 } = req.query;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedTributes = memorial.tributes.slice(startIndex, endIndex);
+
+    res.json({
+      memorial: {
+        ...memorial.toObject(),
+        tributes: paginatedTributes
+      },
+      totalPages: Math.ceil(memorial.tributes.length / limit),
+      currentPage: Number(page),
+      totalItems: memorial.tributes.length
+    });
   } catch (error) {
     console.error('Get memorial error:', error);
     res.status(500).json({ message: error.message });
@@ -350,39 +373,39 @@ exports.addMedia = async (req, res) => {
   }
 };
 
+// Get user's memorials
 exports.getMyMemorials = async (req, res) => {
   try {
     const {
       page = 1,
       limit = 10,
       search,
-      status,
-      isPublic
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
     } = req.query;
 
-    // Ensure user is authenticated
-    if (!req.user || !req.user.userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+    const query = {
+      createdBy: req.user.userId
+    };
 
-    const query = { createdBy: req.user.userId }; // Filter by logged-in user
-
-    // Apply additional filters
+    // Apply search filter
     if (search) {
       query.$or = [
         { fullName: new RegExp(search, 'i') },
         { biography: new RegExp(search, 'i') }
       ];
     }
-    if (status) query.status = status;
-    if (isPublic !== undefined) query.isPublic = isPublic === 'true';
 
     // Get total count for pagination
     const total = await Memorial.countDocuments(query);
 
+    // Prepare sort options
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+
     // Get paginated results
     const memorials = await Memorial.find(query)
-      .sort({ createdAt: -1 })
+      .sort(sortOptions)
       .limit(Number(limit))
       .skip((Number(page) - 1) * Number(limit))
       .populate('createdBy', 'name email')
@@ -395,7 +418,7 @@ exports.getMyMemorials = async (req, res) => {
       total
     });
   } catch (error) {
-    console.error('Get memorials error:', error);
+    console.error('Get my memorials error:', error);
     res.status(500).json({ message: error.message });
   }
 };

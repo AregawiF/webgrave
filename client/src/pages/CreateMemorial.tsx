@@ -56,7 +56,7 @@ const CreateMemorial: React.FC = () => {
             return;
         }
         try {
-            const verifyResponse = await fetch('http://localhost:5000/api/payments/verify-paystack', {
+            const verifyResponse = await fetch('https://webgrave.onrender.com/api/payments/verify-paystack', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ const CreateMemorial: React.FC = () => {
             console.log("Stored memorial form data in localStorage.");
 
             const amount = 20;
-            const orderResponse = await fetch("http://localhost:5000/api/payments/initiate-memorial-order", {
+            const orderResponse = await fetch("https://webgrave.onrender.com/api/payments/initiate-memorial-order", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -184,7 +184,7 @@ const CreateMemorial: React.FC = () => {
             }
 
             await initiatePaystackPayment(localStorageData);
-            
+
         } catch (error: any) {
             console.error('Error preparing memorial data or initiating payment:', error);
             setSubmitError(`Failed to proceed: ${error.message}`);

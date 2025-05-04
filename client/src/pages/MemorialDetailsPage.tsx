@@ -6,7 +6,6 @@ import Paystack from '@paystack/inline-js';
 
 declare const PaystackPop: any;
 
-
 interface MediaFile {
     type: 'photo' | 'video';
     url: string;
@@ -65,7 +64,6 @@ interface MemorialDetails {
     birthdayReminder?: boolean;
     tributes?: any[];
     totalTributes?: any;
-
 }
 
 export default function MemorialDetailsPage() {
@@ -77,6 +75,11 @@ export default function MemorialDetailsPage() {
     const [sending, setSending] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [isTributesModalOpen, setIsTributesModalOpen] = useState(false);
+    const [tributePage, setTributePage] = useState(1);
+    const [totalTributePages, setTotalTributePages] = useState(1);
+    const [totalTributes, setTotalTributes] = useState(0);
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const location = useLocation();
@@ -85,39 +88,6 @@ export default function MemorialDetailsPage() {
     const [editedMemorial, setEditedMemorial] = useState<MemorialDetails | null>(null);
     const [mainPicturePreview, setMainPicturePreview] = useState<string | null>(null);
     const [additionalMediaPreviews, setAdditionalMediaPreviews] = useState<string[]>([]);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null); // State for modal image
-
-    const fetchMemorial = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`https://webgrave.onrender.com/api/memorials/${id}`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch memorial: ${response.status} ${response.statusText}`);
-            }
-            const data = await response.json();
-            const parsedData: MemorialDetails = {
-                ...data,
-                languages: data.languagesSpoken ? data.languagesSpoken : [],
-                education: data.education ? data.education : [],
-                familyMembers: data.familyMembers ? data.familyMembers : [],
-                additionalMedia: data.additionalMedia ? data.additionalMedia : [],
-                tributes: data.tributes ? data.tributes : [],
-            };
-            setMemorial(parsedData);
-            setEditedMemorial(parsedData);
-            setMainPicturePreview(parsedData.mainPicture);
-            setAdditionalMediaPreviews(parsedData.additionalMedia.map(media => media.url));
-        } catch (err: any) {
-            setError(err.message || 'An unknown error occurred');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchMemorial();
-    }, [id]);
-
     const user = localStorage.getItem('user');
     let loggedUserId = '';
 
@@ -132,6 +102,42 @@ export default function MemorialDetailsPage() {
     } else {
         console.error("User not found.");
     }
+
+    const fetchMemorial = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`https://webgrave.onrender.com/api/memorials/${id}?page=${tributePage}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch memorial: ${response.status} ${response.statusText}`);
+            }
+            const data = await response.json();
+            const parsedData: MemorialDetails = {
+                ...data.memorial,
+                languages: data.memorial.languagesSpoken ? data.memorial.languagesSpoken : [],
+                education: data.memorial.education ? data.memorial.education : [],
+                familyMembers: data.memorial.familyMembers ? data.memorial.familyMembers : [],
+                additionalMedia: data.memorial.additionalMedia ? data.memorial.additionalMedia : [],
+                tributes: data.memorial.tributes ? data.memorial.tributes : [],
+            };
+            setMemorial(parsedData);
+            setTotalTributePages(data.totalPages);
+            setTotalTributes(data.totalItems);
+            setMainPicturePreview(parsedData.mainPicture);
+            setAdditionalMediaPreviews(parsedData.additionalMedia.map(media => media.url));
+        } catch (err: any) {
+            setError(err.message || 'An unknown error occurred');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMemorial();
+    }, [id, tributePage]);
+
+    const handleTributePageChange = (newPage: number) => {
+        setTributePage(newPage);
+    };
 
     const incrementDonation = () => setDonation((prev) => prev + 5);
     const decrementDonation = () => setDonation((prev) => (prev > 5 ? prev - 5 : 5));
@@ -1007,7 +1013,7 @@ export default function MemorialDetailsPage() {
         }
         try {
             // Make sure this URL is your *correct* production backend URL
-            const verifyResponse = await fetch('http://localhost:5000/api/payments/verify-paystack', {
+            const verifyResponse = await fetch('https://webgrave.onrender.com/api/payments/verify-paystack', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1073,7 +1079,7 @@ export default function MemorialDetailsPage() {
             // 1. Call your backend to create an order record and get payment details
             console.log("Initiating payment order creation on backend...");
             // Make sure this URL is your *correct* production backend URL
-            const orderResponse = await fetch('http://localhost:5000/api/payments/initiate-paystack-order', {
+            const orderResponse = await fetch('https://webgrave.onrender.com/api/payments/initiate-paystack-order', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1142,6 +1148,16 @@ export default function MemorialDetailsPage() {
     }; // End of sendFlowerTribute function
 
 
+    const handleViewAllTributes = () => {
+        setIsTributesModalOpen(true);
+        setTributePage(1); // Reset to first page when opening modal
+    };
+
+    const handleTributesModalClose = () => {
+        setIsTributesModalOpen(false);
+        setTributePage(1); // Reset page when closing modal
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -1155,8 +1171,7 @@ export default function MemorialDetailsPage() {
     }
 
     return (
-        <div className="min-h-screen  text-left  bg-gray-50 ">
-
+        <div className="min-h-screen bg-memorial-50 py-12">
             {/* Header with profile image and edit/delete buttons */}
             <div className="relative h-80 overflow-hidden">
                 <img
@@ -1428,20 +1443,84 @@ export default function MemorialDetailsPage() {
                                                     </div>
                                                 ))}
                                             </div>
-                                            <button
-                                                onClick={() => setActiveTab('about')}
-                                                className="text-sm text-indigo-600 hover:text-indigo-800 mt-2"
-                                            >
-                                                View all tributes
-                                            </button>
                                         </div>
                                     )}
+
+                                    <button
+                                        onClick={handleViewAllTributes}
+                                        className="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    >
+                                        View All Tributes
+                                    </button>
                                 </div>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
+
+            {/* Tributes Modal */}
+            <div
+                className={`fixed inset-0 bg-black bg-opacity-50 z-50 ${isTributesModalOpen ? 'flex' : 'hidden'}`}
+                onClick={handleTributesModalClose}
+            >
+                <div
+                    className="relative bg-white rounded-lg max-w-4xl mx-auto my-8 p-6 w-full max-h-[90vh] overflow-y-auto"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-semibold">All Digital Flower Tributes</h2>
+                        <button
+                            onClick={handleTributesModalClose}
+                            className="text-gray-400 hover:text-gray-500"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {memorial?.tributes.map((tribute, index) => (
+                            <div key={index} className="bg-gray-50 rounded-lg p-4">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="font-semibold">{tribute.senderName}</p>
+                                        <p className="text-sm text-gray-600">{new Date(tribute.date).toLocaleDateString()}</p>
+                                    </div>
+                                    <p className="text-indigo-600">${tribute.amount}</p>
+                                </div>
+                                {tribute.message && (
+                                    <p className="mt-2 text-gray-600">"{tribute.message}"</p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {totalTributePages > 1 && (
+                        <div className="mt-6 flex justify-center">
+                            <nav className="flex items-center justify-center">
+                                <button
+                                    onClick={() => handleTributePageChange(tributePage - 1)}
+                                    disabled={tributePage === 1}
+                                    className="px-4 py-2 mx-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
+                                >
+                                    Previous
+                                </button>
+                                <span className="px-4 py-2 mx-2">
+                                    Page {tributePage} of {totalTributePages}
+                                </span>
+                                <button
+                                    onClick={() => handleTributePageChange(tributePage + 1)}
+                                    disabled={tributePage === totalTributePages}
+                                    className="px-4 py-2 mx-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
+                                >
+                                    Next
+                                </button>
+                            </nav>
+                        </div>
+                    )}
+                </div>
+            </div>
+
             {/* Modal for Image Preview */}
             {selectedImage && (
                 <div

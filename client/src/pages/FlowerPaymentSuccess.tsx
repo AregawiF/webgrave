@@ -38,7 +38,7 @@ const FlowerPaymentSuccess = () => {
       setMemorialId(tributeData.memorialId);
 
       // Create the flower tribute
-      const tributeResponse = await fetch(`http://localhost:5000/api/flowers/send`, {
+      const tributeResponse = await fetch(`https://webgrave.onrender.com/api/flowers/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -5,23 +5,14 @@ import { AdvancedSearch } from '../components/AdvancedSearch';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface Memorial {
-  id: string;
-  name: string;
-  birthYear: string;
-  deathYear: string;
-  profileImage: string;
-  birthDate: string;
-  deathDate: string;
-  description: string;
-  isPublic: boolean;
-  mediaFiles: {
-    type: 'image' | 'video' | 'document';
-    url: string;
-    caption: string;
-  }[];
-  enableDigitalFlowers: boolean;
+  _id: string;
+  fullName: string;
+  mainPicture: string;
+  birthDate?: string;
+  deathDate?: string;
+  placeOfBirth?: string;
+  biography?: string;
   suggestedDonationAmount: number;
-  // New fields
   causeOfDeath?: string;
   disasterType?: string;
   disasterName?: string;
@@ -32,39 +23,93 @@ interface Memorial {
   identityType?: string;
 }
 
+interface PaginationState {
+  page: number;
+  limit: number;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
+
+interface PaginationResponse {
+  totalPages: number;
+  currentPage: number;
+  total: number;
+}
+
 export default function MyMemorials() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMemorial, setSelectedMemorial] = useState<Memorial | null>(null);
-  const [memorials, setMemorials] = useState([]);
+  const [memorials, setMemorials] = useState<Memorial[]>([]);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [searchCriteria, setSearchCriteria] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState<PaginationState>({
+    page: 1,
+    limit: 10,
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
+  });
+  const [paginationResponse, setPaginationResponse] = useState<PaginationResponse>({
+    totalPages: 1,
+    currentPage: 1,
+    total: 0
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMemorials = async () => {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('https://webgrave.onrender.com/api/memorials/my-memorials', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        method: 'GET',
-      });
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(
+          `https://webgrave.onrender.com/api/memorials/my-memorials?page=${pagination.page}&limit=${pagination.limit}&sortBy=${pagination.sortBy}&sortOrder=${pagination.sortOrder}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            method: 'GET',
+          }
+        );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log('error fetching memorials', errorData);
-        return;
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log('error fetching memorials', errorData);
+          setLoading(false);
+          return;
+        }
+
+        const data = await response.json();
+        setMemorials(data.memorials);
+        setPaginationResponse({
+          totalPages: data.totalPages,
+          currentPage: data.currentPage,
+          total: data.total
+        });
+      } catch (error) {
+        console.error('Error fetching memorials:', error);
+      } finally {
+        setLoading(false);
       }
-
-      const data = await response.json();
-      setMemorials(data.memorials);
-      setLoading(false);
     };
 
     fetchMemorials();
-  }, []);
+  }, [pagination]);
+
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({
+      ...prev,
+      page: newPage
+    }));
+  };
+
+  const handleSortChange = (field: string) => {
+    setPagination(prev => ({
+      ...prev,
+      sortBy: field,
+      sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc'
+    }));
+  };
 
   const filteredMemorials = searchQuery.toLowerCase() === 'admin pages'
     ? []
@@ -80,11 +125,11 @@ export default function MyMemorials() {
               case 'deathDate':
                 return memorial.deathDate === value;
               case 'nationality':
-                return memorial.nationality.toLowerCase().includes(value.toString().toLowerCase());
+                return memorial.nationality?.toLowerCase().includes(value.toString().toLowerCase());
               case 'religion':
                 return memorial.religion?.toLowerCase().includes(value.toString().toLowerCase());
               case 'primaryCause':
-                return memorial.causeOfDeath?.primaryCause.toLowerCase().includes(value.toString().toLowerCase());
+                return memorial.causeOfDeath?.primaryCause?.toLowerCase().includes(value.toString().toLowerCase());
               case 'majorEvent':
                 return memorial.causeOfDeath?.majorEvent === value;
               default:
@@ -165,7 +210,6 @@ export default function MyMemorials() {
                 key={memorial._id}
                 className="memorial-card group cursor-pointer"
                 onClick={() => navigate(`/memorial/${memorial._id}`)}
-                // onClick={() => setSelectedMemorial(memorial)}
               >
                 <div className="aspect-w-1 aspect-h-1 relative overflow-hidden">
                   <img
@@ -197,6 +241,33 @@ export default function MyMemorials() {
               </p>
             </div>
           )}
+
+          {/* Pagination Controls */}
+          <div className="mt-8">
+            <div className="flex justify-center">
+              <nav className="flex items-center justify-center">
+                <button
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1}
+                  className="px-4 py-2 mx-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                
+                <span className="px-4 py-2 mx-2">
+                  Page {paginationResponse.currentPage} of {paginationResponse.totalPages}
+                </span>
+                
+                <button
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === paginationResponse.totalPages}
+                  className="px-4 py-2 mx-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </nav>
+            </div>
+          </div>
         </div>
       </div>
 

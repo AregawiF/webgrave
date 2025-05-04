@@ -159,7 +159,7 @@ const PaymentSuccess: React.FC = () => {
                 formData.append('causeOfDeath', JSON.stringify(causeOfDeath));
 
                 console.log("Attempting to create memorial via API...");
-                const createResponse = await fetch('http://localhost:5000/api/memorials', {
+                const createResponse = await fetch('https://webgrave.onrender.com/api/memorials', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
