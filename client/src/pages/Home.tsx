@@ -88,24 +88,25 @@ export default function Home() {
       </div>
     </div>
     {/* How It Works */}
-    <div className=" rounded-xl p-8 py-28 shadow-sm">
-      <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">How It Works</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {howItWorks.map((step) => (
-          <div key={step.step} className="relative">
-            <div className="flex items-center justify-center">
-              <span className="h-12 w-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xl font-bold">
-                {step.step}
-              </span>
+    <section className=" py-24 px-4 sm:px-6 lg:px-8">
+        <h3 className="text-3xl font-extrabold text-center text-gray-900 mb-12">How It Works</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+          {howItWorks.map((step) => (
+            <div
+              key={step.step}
+              className="bg-primary-50 rounded-lg p-6 shadow-md hover:shadow-xl transition duration-300 ease-in-out transform hover:-translate-y-1"
+            >
+              <div className="flex items-center justify-center mb-4">
+                <div className="h-12 w-12 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold text-xl">
+                  {step.step}
+                </div>
+              </div>
+              <h4 className="text-xl font-semibold text-center text-gray-800">{step.title}</h4>
+              <p className="mt-2 text-gray-600 text-center text-sm">{step.description}</p>
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 text-center mt-4 mb-2">
-              {step.title}
-            </h4>
-            <p className="text-gray-600 text-center">{step.description}</p>
-          </div>
-        ))}
-      </div>
-    </div>    
+          ))}
+        </div>
+      </section>  
   </div>
   );
 }
