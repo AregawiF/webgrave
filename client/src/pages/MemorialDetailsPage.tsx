@@ -973,8 +973,9 @@ export default function MemorialDetailsPage() {
                                 </div>
                             ))}
 
+
                             {/* File Input for Additional Media (if editing) */}
-                            {isEditing && (
+                            {isEditing ? (
                                 <div>
                                     <label htmlFor="additionalMedia" className="block text-sm font-medium text-gray-700">Add Media</label>
                                     <input
@@ -987,157 +988,13 @@ export default function MemorialDetailsPage() {
                                         className="mt-1"
                                     />
                                 </div>
-                            )}
+                            ): <p className='text-gray-500 text-sm'>Enable editing to add media.</p>}
                         </div>
                     </div>
                 );
         }
     };
 
-    // Send flower tribute
-    // const sendFlowerTribute = async () => {
-    //     setError(null);
-    //     setSuccess(null);
-    //     setSending(true);
-
-    //     try {
-    //         const token = localStorage.getItem('authToken');
-    //         if (!token) {
-    //             navigate('/login', { state: { from: location.pathname, message: 'Please log in to send flowers' } });
-    //             return;
-    //         }
-
-    //         localStorage.setItem('flowerTributeData', JSON.stringify({
-    //             memorialId: id,
-    //             amount: donation,
-    //             message: tributeMessage
-    //         }));
-
-    //         const response = await fetch('https://webgrave.onrender.com/api/payments/create-payfast-payment', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 'Authorization': `Bearer ${token}`
-    //             },
-    //             body: JSON.stringify({
-    //                 amount: donation,
-    //                 orderType: 'flower_tribute',
-    //                 memorialId: id,
-    //             })
-    //         });
-
-    //         if (!response.ok) {
-    //             const data = await response.json();
-    //             throw new Error(data.error || 'Failed to initiate payment');
-    //         }
-
-    //         const { payfastUrl, formData } = await response.json();
-
-    //         if (!payfastUrl || !formData) {
-    //             throw new Error('Received invalid data from payment server.');
-    //         }
-
-    //         // Create and submit the PayFast form
-    //         const form = document.createElement('form');
-    //         form.method = 'POST';
-    //         form.action = payfastUrl;
-
-    //         Object.entries(formData).forEach(([key, value]) => {
-    //             const input = document.createElement('input');
-    //             input.type = 'hidden';
-    //             input.name = key;
-    //             input.value = value as string;
-    //             form.appendChild(input);
-    //         });
-
-    //         document.body.appendChild(form);
-    //         form.submit();
-
-    //     } catch (err: any) {
-    //         setError(err.message || 'An error occurred');
-    //     } finally {
-    //         setSending(false);
-    //     }
-    // };
-
-
-    // const sendFlowerTribute = async () => {
-    //     setError(null);
-    //     setSuccess(null);
-    //     setSending(true);
-
-    //     try {
-    //         const token = localStorage.getItem('authToken');
-    //         if (!token) {
-    //             navigate('/login', { state: { from: location.pathname, message: 'Please log in to send flowers' } });
-    //             return;
-    //         }
-
-    //         localStorage.setItem('flowerTributeData', JSON.stringify({
-    //             memorialId: id,
-    //             amount: donation,
-    //             message: tributeMessage
-    //         }));
-
-    //         // Optional: send tribute data to backend for order creation (like you do now)
-    //         const orderResponse = await fetch('http://localhost:5000/api/payments/initiate-paystack-order', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 'Authorization': `Bearer ${token}`
-    //             },
-    //             body: JSON.stringify({
-    //                 amount: donation,
-    //                 orderType: 'flower_tribute',
-    //                 memorialId: id,
-    //                 tributeMessage,
-    //             })
-    //         });
-
-    //         if (!orderResponse.ok) throw new Error('Failed to create order');
-
-    //         const { orderId, email, publicKey, amountInUSD } = await orderResponse.json();
-
-
-    //         const handler = PaystackPop.setup({
-    //             key: publicKey,
-    //             email,
-    //             amount: amountInUSD, 
-    //             currency: 'USD',
-    //             ref: orderId,
-    //             callback: async (response) => {
-    //                 // Send ref to backend for verification
-    //                 await fetch('http://localhost:5000/api/payments/verify-paystack', {
-    //                     method: 'POST',
-    //                     headers: {
-    //                         'Content-Type': 'application/json',
-    //                         'Authorization': `Bearer ${token}`
-    //                     },
-    //                     body: JSON.stringify({
-    //                         reference: response.reference,
-    //                         orderId
-    //                     })
-    //                 });
-
-    //                 navigate(`/flower-payment/success?order_id=${orderId}`);
-    //             },
-    //             onClose: () => {
-    //                 setSending(false);
-    //                 setError('Payment was cancelled');
-    //             }
-    //         });
-
-    //         handler.openIframe();
-
-    //     } catch (err: any) {
-    //         setError(err.message || 'An error occurred');
-    //     } finally {
-    //         setSending(false);
-    //     }
-    // };
-
-        // --- Separate ASYNC function for Backend Verification ---
-    // This function is called *from* the synchronous Paystack callback.
     const handlePaymentVerification = async (paystackResponse: any, orderId: string, authToken: string | null) => {
         console.log("Initiating backend verification for order:", orderId, "Ref:", paystackResponse.reference);
         // Ensure setError and setSending are accessible from component state hooks
@@ -1187,9 +1044,6 @@ export default function MemorialDetailsPage() {
 
     // --- Function to initiate the payment process ---
     const sendFlowerTribute = async () => {
-        // Ensure setError, setSending, navigate, id, donation, tributeMessage
-        // are accessible from component state/props/hooks.
-        // Ensure PaystackPop is declared globally (declare const PaystackPop: any;)
 
         setError(null); // Clear previous errors
         setSending(true); // Set loading state for the button
@@ -1229,7 +1083,6 @@ export default function MemorialDetailsPage() {
                     amount: donation,           // Send the numeric amount from state
                     orderType: 'flower_tribute',
                     memorialId: id,             // Send the memorial ID from route params
-                    // tributeMessage: tributeMessage, // Only send if backend Order schema needs it
                 })
             });
 

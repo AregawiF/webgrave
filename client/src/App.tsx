@@ -71,7 +71,7 @@ const App: React.FC = () => {
             <Route path="/find-memorials" element={<FindMemorial />} />
             <Route path="/scan-code" element={<ScanCode />} />
             <Route path="/" element={<Home />} />
-            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/memorial-payment/success" element={<PaymentSuccess />} />
             <Route path="/payment/cancel" element={<PaymentCancel />} />
             <Route path="/flower-payment/success" element={<FlowerPaymentSuccess />} />
             <Route path="/flower-payment/cancel" element={<FlowerPaymentCancel />} />

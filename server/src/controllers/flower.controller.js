@@ -1,11 +1,8 @@
 const Flower = require('../models/flower.model');
 const Memorial = require('../models/memorial.model');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// Send flower tribute with payment
 const sendFlowerTribute = async (req, res) => {
   try {
-    // Check if user is authenticated
     if (!req.user) {
       return res.status(401).json({ 
         error: 'Authentication required', 
@@ -14,19 +11,17 @@ const sendFlowerTribute = async (req, res) => {
     }
 
     const { memorialId, amount, message } = req.body;
+    console.log('flower details', memorialId, amount, message);
     
-    // Validate amount is a number and greater than 0
     if (!amount || isNaN(amount) || amount <= 0) {
       return res.status(400).json({ error: 'Valid amount is required' });
     }
 
-    // Validate memorial exists
     const memorial = await Memorial.findById(memorialId);
     if (!memorial) {
       return res.status(404).json({ error: 'Memorial not found' });
     }
 
-    // Check if digital flowers are enabled for this memorial
     if (!memorial.enableDigitalFlowers) {
       return res.status(400).json({ error: 'Digital flowers are not enabled for this memorial' });
     }
