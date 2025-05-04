@@ -1,17 +1,18 @@
 const Memorial = require('../models/memorial.model');
 const uploadCloudinary = require('../utils/uploadCloudinary');
-
+const mongoose = require('mongoose');
 
 // Create a new memorial
 exports.createMemorial = async (req, res) => {
   try {
-    // Upload main picture to Cloudinary
+    // First, upload the main picture to Cloudinary
     const mainPictureResult = await uploadCloudinary(req.files.mainPicture[0].path);
     
     const memorialData = {
       ...req.body,
       mainPicture: mainPictureResult.secure_url,
-      createdBy: req.user.userId
+      createdBy: req.user.userId,
+      orderId: req.body.orderId
     };
 
     // Parse dates
@@ -31,7 +32,21 @@ exports.createMemorial = async (req, res) => {
     memorialData.enableDigitalFlowers = req.body.enableDigitalFlowers === 'true';
     memorialData.isPublic = req.body.isPublic === 'true';
 
-    // Handle additional media
+    // Check if memorial already exists for this order
+    const existingMemorial = await Memorial.findOne({ orderId: memorialData.orderId });
+    if (existingMemorial) {
+      return res.status(200).json({ 
+        message: 'Memorial already exists for this order',
+        memorialId: existingMemorial._id,
+        memorial: existingMemorial
+      });
+    }
+
+    // Create the memorial
+    const memorial = new Memorial(memorialData);
+    await memorial.save();
+
+    // Handle additional media if present
     if (req.files.additionalMedia) {
       const mediaPromises = req.files.additionalMedia.map(async (file) => {
         const result = await uploadCloudinary(file.path);
@@ -40,15 +55,24 @@ exports.createMemorial = async (req, res) => {
           url: result.secure_url
         };
       });
-      memorialData.additionalMedia = await Promise.all(mediaPromises);
+      memorial.additionalMedia = await Promise.all(mediaPromises);
+      await memorial.save();
     }
-
-    const memorial = new Memorial(memorialData);
-    await memorial.save();
-    console.log(memorial);
 
     res.status(201).json(memorial);
   } catch (error) {
+    // Handle duplicate key error specifically
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.orderId) {
+      const existingMemorial = await Memorial.findOne({ orderId: req.body.orderId });
+      if (existingMemorial) {
+        return res.status(200).json({ 
+          message: 'Memorial already exists for this order',
+          memorialId: existingMemorial._id,
+          memorial: existingMemorial
+        });
+      }
+    }
+    
     console.error('Create memorial error:', error);
     res.status(400).json({ message: error.message });
   }

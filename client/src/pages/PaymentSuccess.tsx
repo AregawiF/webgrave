@@ -136,6 +136,7 @@ const PaymentSuccess: React.FC = () => {
                 formData.append('militaryService', String(!!memorialData.militaryService));
                 formData.append('enableDigitalFlowers', String(memorialData.enableDigitalFlowers || false));
                 formData.append('isPublic', String(memorialData.isPublic ?? true)); // Default to public if undefined
+                formData.append('orderId', orderId); // Add orderId to the request
                 if (memorialData.languages && Array.isArray(memorialData.languages) && memorialData.languages.length) {
                     formData.append('languagesSpoken', JSON.stringify(memorialData.languages));
                 } else {
@@ -161,7 +162,6 @@ const PaymentSuccess: React.FC = () => {
                 const createResponse = await fetch('http://localhost:5000/api/memorials', {
                     method: 'POST',
                     headers: {
-                        // Content-Type is set automatically for FormData
                         'Authorization': `Bearer ${token}`
                     },
                     body: formData
@@ -172,18 +172,24 @@ const PaymentSuccess: React.FC = () => {
                     try {
                         errorData = await createResponse.json();
                     } catch (jsonError) {
-                        // Handle cases where the error response isn't valid JSON
                         errorData = { message: `Server error (${createResponse.status}). Please contact support.` };
                     }
+                    
                     console.error("API Error - Failed to create memorial:", errorData);
                     throw new Error(errorData.message || `Failed to save memorial details (Code: ${createResponse.status}).`);
                 }
 
-                const newMemorial = await createResponse.json(); // Assuming backend returns the created memorial object
+                const newMemorial = await createResponse.json();
                 console.log("Memorial created successfully:", newMemorial);
 
+                // If the memorial already exists, redirect to it
+                if (newMemorial.message === 'Memorial already exists for this order') {
+                    navigate(`/memorial/${newMemorial.memorialId}`);
+                    return;
+                }
+
                 // --- Success ---
-                setNewMemorialId(newMemorial._id); // Store ID for navigation link
+                setNewMemorialId(newMemorial._id);
                 setStatus('success');
 
                 // Clean up localStorage *only* on full success

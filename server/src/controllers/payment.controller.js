@@ -1,6 +1,7 @@
 const axios = require('axios');
 const Order = require('../models/order.model'); 
 const User = require('../models/user.model');
+const Memorial = require('../models/memorial.model'); // Added Memorial model
 
 
 exports.initiatePaystackOrder = async (req, res) => {
@@ -77,11 +78,30 @@ exports.verifyPaystackPayment = async (req, res) => {
                 return res.status(404).json({ error: 'Order not found' });
             }
 
+            // Check if memorial already exists for this order
+            const existingMemorial = await Memorial.findOne({ orderId: orderId });
+            if (existingMemorial) {
+                order.status = 'paid';
+                order.paymentDetails = data.data; 
+                await order.save();
+                return res.json({ 
+                    success: true, 
+                    message: 'Payment verified',
+                    memorialId: existingMemorial._id
+                });
+            }
+
+            // Update order status
             order.status = 'paid';
             order.paymentDetails = data.data; 
             await order.save();
 
-            return res.json({ success: true, message: 'Payment verified' });
+            // Return success without creating memorial - this will be handled by PaymentSuccess component
+            return res.json({ 
+                success: true, 
+                message: 'Payment verified',
+                orderId: orderId
+            });
         } else {
             return res.status(400).json({ success: false, message: 'Payment not successful' });
         }

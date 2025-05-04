@@ -1,5 +1,6 @@
 const Flower = require('../models/flower.model');
 const Memorial = require('../models/memorial.model');
+const mongoose = require('mongoose'); // Add this line to import mongoose
 
 const sendFlowerTribute = async (req, res) => {
   try {
@@ -27,37 +28,50 @@ const sendFlowerTribute = async (req, res) => {
     }
     const senderId = req.user?.userId || userId;
 
-    tribute = new Flower({
-      memorialId,
-      senderId: senderId,
-      amount,
-      message: message,
-    });
+    // Create the flower tribute and update memorial in a single transaction
+    const session = await mongoose.startSession();
+    try {
+      session.startTransaction();
+      
+      // Create flower tribute
+      const tribute = new Flower({
+        memorialId,
+        senderId,
+        amount,
+        message: message,
+      });
+      await tribute.save({ session });
 
-    await tribute.save();
+      // Update memorial
+      await Memorial.findByIdAndUpdate(
+        memorialId,
+        { 
+          $push: { tributes: { 
+            message: message,
+            amount,
+            senderId: senderId,
+          }},
+          $inc: { 'totalTributes.amount': amount, 'totalTributes.count': 1 }
+        },
+        { session }
+      );
 
-    // Update memorial total tributes
-    await Memorial.findByIdAndUpdate(
-      memorialId,
-      { 
-        $push: { tributes: { 
-          message: message,
-          amount,
-          senderId: senderId,
-        }},
-        $inc: { 'totalTributes.amount': amount, 'totalTributes.count': 1 }
-      }
-    );
-
-    // Get memorial name to display on success page
-    const memorialName = memorial.fullName;
-    
-    res.status(200).json({
-      success: true,
-      tribute,
-      memorialName,
-      message: 'Flower tribute verified successfully'
-    });
+      await session.commitTransaction();
+      
+      return res.status(200).json({
+        success: true,
+        tribute: tribute.toObject(),
+        message: 'Flower tribute sent successfully'
+      });
+    } catch (error) {
+      await session.abortTransaction();
+      return res.status(500).json({
+        error: 'Failed to send flower tribute. Please try again.',
+        details: error.message
+      });
+    } finally {
+      session.endSession();
+    }
 
   } catch (error) {
     console.error('Complete flower tribute error:', error);

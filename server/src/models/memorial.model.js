@@ -76,7 +76,12 @@ const memorialSchema = new mongoose.Schema({
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
+  orderId: {
+    type: String,
+    unique: true,
+    sparse: true // Allow null values
+  }
 });
 
 // Update timestamps on save
