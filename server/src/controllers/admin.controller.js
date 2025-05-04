@@ -33,7 +33,7 @@ exports.getDashboardStats = async (req, res) => {
       .limit(5)
       .populate('memorialId', 'fullName')
       .select('amount createdAt');
-    
+
     res.json({
       totalMemorials,
       totalUsers,
@@ -49,7 +49,55 @@ exports.getDashboardStats = async (req, res) => {
   }
 };
 
-// Get all tributes for admin
+// Get all users for admin with pagination and search
+exports.getAllUsers = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      search = '',
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
+    } = req.query;
+
+    const query = {};
+
+    // Apply search filter if provided
+    if (search) {
+      query.$or = [
+        { firstName: new RegExp(search, 'i') },
+        { lastName: new RegExp(search, 'i') },
+        { email: new RegExp(search, 'i') }
+      ];
+    }
+
+    // Get total count for pagination
+    const total = await User.countDocuments(query);
+
+    // Prepare sort options
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+
+    // Get paginated results
+    const users = await User.find(query)
+      .sort(sortOptions)
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit))
+      .select('-password');
+
+    res.json({
+      users,
+      totalPages: Math.ceil(total / Number(limit)),
+      currentPage: Number(page),
+      total
+    });
+  } catch (error) {
+    console.error('Admin get all users error:', error);
+    res.status(500).json({ message: 'Failed to retrieve users' });
+  }
+};
+
+// Get all tributes for admin with pagination and sorting
 exports.getAllTributes = async (req, res) => {
   try {
     const {
@@ -69,8 +117,8 @@ exports.getAllTributes = async (req, res) => {
     // Get paginated results
     const tributesDb = await Flower.find()
       .sort(sortOptions)
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit));
 
     // Process all tributes in parallel
     const tributes = await Promise.all(tributesDb.map(async (tribute) => {
@@ -97,7 +145,9 @@ exports.getAllTributes = async (req, res) => {
 
     res.json({
       tributes,
-      total
+      total,
+      totalPages: Math.ceil(total / Number(limit)),
+      currentPage: Number(page)
     });
   } catch (error) {
     console.error('Admin get all tributes error:', error);
@@ -105,56 +155,7 @@ exports.getAllTributes = async (req, res) => {
   }
 };
 
-// Get all users for admin
-exports.getAllUsers = async (req, res) => {
-  try {
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
-    } = req.query;
-
-    const query = {};
-
-    // Apply search filter if provided
-    if (search) {
-      query.$or = [
-        { firstName: new RegExp(search, 'i') },
-        { lastName: new RegExp(search, 'i') },
-        { email: new RegExp(search, 'i') }
-      ];
-    }
-
-    // Get total count for pagination
-    const total = await User.countDocuments(query);
-
-    // Prepare sort options
-    const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
-
-    // Get paginated results
-    const users = await User.find(query)
-      .sort(sortOptions)
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .select('-password');
-
-    res.json({
-      users,
-      totalPages: Math.ceil(total / limit),
-      currentPage: Number(page),
-      total
-    });
-  } catch (error) {
-    console.error('Admin get all users error:', error);
-    res.status(500).json({ message: 'Failed to retrieve users' });
-  }
-};
-
-
-// adminGetUserProfile
+// Get user profile for admin
 exports.adminGetUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
@@ -163,7 +164,7 @@ exports.adminGetUserProfile = async (req, res) => {
     }
     res.json(user);
   } catch (error) {
-    console.error('Get profile had errors:', error); // Detailed error logging
+    console.error('Get profile had errors:', error);
     res.status(500).json({ 
       message: 'Error fetching profile',
       error: error.message 
@@ -171,12 +172,10 @@ exports.adminGetUserProfile = async (req, res) => {
   }
 };
 
-
-// adminDeleteProfile
+// Delete user profile for admin
 exports.adminDeleteProfile = async (req, res) => {
   try {
-
-    // make sure it is an admin
+    // Check if user is admin
     const askerRole = req.user.role;
     if (askerRole !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
@@ -188,7 +187,7 @@ exports.adminDeleteProfile = async (req, res) => {
     }
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
-    console.error('Delete profile had errors:', error); // Detailed error logging
+    console.error('Delete profile had errors:', error);
     res.status(500).json({ 
       message: 'Error deleting profile',
       error: error.message 
@@ -196,8 +195,7 @@ exports.adminDeleteProfile = async (req, res) => {
   }
 };
 
-
-// adminDeleteTribute
+// Delete tribute for admin
 exports.adminDeleteTribute = async (req, res) => {
   try {
     const tribute = await Flower.findByIdAndDelete(req.params.id);
@@ -206,7 +204,7 @@ exports.adminDeleteTribute = async (req, res) => {
     }
     res.json({ message: 'Tribute deleted successfully' });
   } catch (error) {
-    console.error('Delete tribute had errors:', error); // Detailed error logging
+    console.error('Delete tribute had errors:', error);
     res.status(500).json({ 
       message: 'Error deleting tribute',
       error: error.message 

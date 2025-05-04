@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Trash2, Edit, Eye, DollarSign, AlertTriangle, 
-  Flower2, Users, CreditCard, Database, Grid
+  Flower2, Users, CreditCard, Database, Grid, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -11,7 +11,6 @@ interface User {
   email: string;
   createdAt: Date;
 }
-
 
 interface Tribute {
   _id: string;
@@ -42,7 +41,6 @@ interface Stats {
   }[];
 }
 
-
 const AdminPanel = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -52,121 +50,193 @@ const AdminPanel = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [tributes, setTributes] = useState<Tribute[]>([]);
   const [numberOfTributes, setNumberOfTributes] = useState(0);
+  const [userPage, setUserPage] = useState(1);
+  const [tributePage, setTributePage] = useState(1);
+  const [usersPerPage] = useState(10);
+  const [tributesPerPage] = useState(10);
+  const [totalUserPages, setTotalUserPages] = useState(1);
+  const [totalTributePages, setTotalTributePages] = useState(1);
+  const [userSearch, setUserSearch] = useState('');
+  const [userSortBy, setUserSortBy] = useState('createdAt');
+  const [userSortOrder, setUserSortOrder] = useState('desc');
+  const [tributeSortBy, setTributeSortBy] = useState('createdAt');
+  const [tributeSortOrder, setTributeSortOrder] = useState('desc');
 
   const fetchUsers = async () => {
-    const token = localStorage.getItem('authToken');
-    const response = await fetch('https://webgrave.onrender.com/api/admin/users', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      method: 'GET',
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.log('error fetching users', errorData);
-      setError('Failed to fetch users');
-      return;
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('Authentication required');
+        return;
+      }
+
+      const response = await fetch(
+        `https://webgrave.onrender.com/api/admin/users?page=${userPage}&limit=${usersPerPage}&search=${userSearch}&sortBy=${userSortBy}&sortOrder=${userSortOrder}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          method: 'GET',
+        }
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error fetching users:', errorData);
+        setError(errorData.message || 'Failed to fetch users');
+        return;
+      }
+      
+      const data = await response.json();
+      console.log('users', data);
+      setUsers(data.users);
+      setTotalUserPages(data.totalPages);
+      setNumberOfTributes(data.total);
+    } catch (error) {
+      console.error('Error in fetchUsers:', error);
+      setError('An error occurred while fetching users');
+    } finally {
+      setIsLoading(false);
     }
-    
-    const data = await response.json();
-    setUsers(data.users);
   };
 
-  const fetchAllTributes = async () =>{
-    const token = localStorage.getItem('authToken');
-    const response = await fetch('https://webgrave.onrender.com/api/admin/tributes', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      method: 'GET',
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.log('error fetching tributes', errorData);
-      setError('Failed to fetch tributes');
-      return;
+  const fetchAllTributes = async (currentPage = tributePage, currentSortBy = tributeSortBy, currentSortOrder = tributeSortOrder) => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('Authentication required');
+        return;
+      }
+
+      const response = await fetch(
+        `https://webgrave.onrender.com/api/admin/tributes?page=${currentPage}&limit=${tributesPerPage}&sortBy=${currentSortBy}&sortOrder=${currentSortOrder}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          method: 'GET',
+        }
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error fetching tributes:', errorData);
+        setError(errorData.message || 'Failed to fetch tributes');
+        return;
+      }
+      
+      const data = await response.json();
+      console.log('tributes', data);
+      setTributes(data.tributes);
+      setTotalTributePages(data.totalPages);
+      setNumberOfTributes(data.total);
+    } catch (error) {
+      console.error('Error in fetchAllTributes:', error);
+      setError('An error occurred while fetching tributes');
+    } finally {
+      setIsLoading(false);
     }
-    
-    const data = await response.json();
-    setTributes(data.tributes);
-    setNumberOfTributes(data.total);
-  }
+  };
+
+  const handleUserPageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalUserPages) {
+      setUserPage(newPage);
+      fetchUsers();
+    }
+  };
+
+  const handleTributePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalTributePages) {
+      setTributePage(newPage);
+      fetchAllTributes();
+    }
+  };
+
+  const handleUserSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserSearch(e.target.value);
+    setUserPage(1);
+    fetchUsers();
+  };
+
+  const handleUserSort = (sortBy: string) => {
+    setUserSortBy(sortBy);
+    setUserSortOrder(userSortOrder === 'asc' ? 'desc' : 'asc');
+    setUserPage(1);
+    fetchUsers();
+  };
+
+  const handleTributeSort = (sortBy: string) => {
+    setTributeSortBy(sortBy);
+    setTributeSortOrder(tributeSortOrder === 'asc' ? 'desc' : 'asc');
+    setTributePage(1);
+    fetchAllTributes();
+  };
 
   useEffect(() => {
-
-    // Check if user is admin
-    const checkAdminAccess = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        
-        if (!token) {
-          console.log("No auth token found");
-          setError("Authentication required. Please log in.");
-          navigate('/login');
-          return;
-        }
-
-        // Check if user has admin role from localStorage
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-          try {
-            const user = JSON.parse(userStr);
-            if (user.role === 'admin') {
-              setIsAdmin(true);
-
-              // Fetch stats
-              const statsResponse = await fetch('https://webgrave.onrender.com/api/admin/dashboard', {
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                },
-                method: 'GET',
-              });
-              
-              if (!statsResponse.ok) {
-                const errorData = await statsResponse.json();
-                console.log('error fetching stats', errorData);
-                setError('Failed to fetch stats');
-                return;
-              }
-              
-              const statsData = await statsResponse.json();
-              setStats(statsData);
-              
-              // // Set dummy stats for now
-              // setStats({
-              //   totalMemorials: 15,
-              //   totalUsers: 25,
-              //   totalRevenue: 300,
-              //   memorialRevenue: 240,
-              //   flowerRevenue: 60,
-              //   recentMemorials: [],
-              //   recentTributes: []
-              // });
-            } else {
-              setError("You need admin privileges to access this page.");
-              navigate('/');
-            }
-          } catch (error) {
-            console.error("Error parsing user data:", error);
-            setError("Error checking admin status.");
-          }
-        } else {
-          setError("User session data missing.");
-          navigate('/login');
-        }
-      } catch (error) {
-        console.error("Admin check error:", error);
-        setError("Something went wrong while checking admin access.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    checkAdminAccess();
     fetchUsers();
     fetchAllTributes();
+  }, [userPage, tributePage, userSearch, userSortBy, userSortOrder, tributeSortBy, tributeSortOrder]);
+
+  const checkAdminAccess = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        console.log("No auth token found");
+        setError("Authentication required. Please log in.");
+        navigate('/login');
+        return;
+      }
+
+      // Check if user has admin role from localStorage
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          if (user.role === 'admin') {
+            setIsAdmin(true);
+
+            // Fetch stats
+            const statsResponse = await fetch('https://webgrave.onrender.com/api/admin/dashboard', {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+              method: 'GET',
+            });
+            
+            if (!statsResponse.ok) {
+              const errorData = await statsResponse.json();
+              console.log('error fetching stats', errorData);
+              setError('Failed to fetch stats');
+              return;
+            }
+            
+            const statsData = await statsResponse.json();
+            setStats(statsData);
+          } else {
+            setError("You need admin privileges to access this page.");
+            navigate('/');
+          }
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+          setError("Error checking admin status.");
+        }
+      } else {
+        setError("User session data missing.");
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error("Admin check error:", error);
+      setError("Something went wrong while checking admin access.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    checkAdminAccess();
   }, [navigate]);
 
   if (isLoading) {
@@ -254,7 +324,7 @@ const AdminPanel = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -325,42 +395,93 @@ const AdminPanel = () => {
                   </div>
                 ))}
               </div>
+              {totalUserPages > 1 && (
+                <div className="mt-6 flex justify-center">
+                  <nav className="flex items-center justify-center space-x-4">
+                    <button
+                      onClick={() => handleUserPageChange(userPage - 1)}
+                      disabled={userPage === 1}
+                      className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Previous</span>
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <span className="px-4 py-2">
+                      Page {userPage} of {totalUserPages}
+                    </span>
+                    <button
+                      onClick={() => handleUserPageChange(userPage + 1)}
+                      disabled={userPage === totalUserPages}
+                      className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Next</span>
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </nav>
+                </div>
+              )}
             </div>
 
             {/* Tributes Section */}
             <div className="md:col-span-2">
               <h2 className="text-xl font-semibold mb-4">Tributes</h2>
               <p className="text-lg font-medium">Number of Flowers: {numberOfTributes}</p>
-              <div className="space-y-4">
-                {tributes && tributes.map(tribute => (
-                  tribute &&
-                  <div key={tribute._id} className="bg-gray-50 p-4 rounded-lg shadow">
-                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-700">Receiver: {tribute.receiver ? `${tribute.receiver.firstName} ${tribute.receiver.lastName}` : 'Unknown'}</p>
-                        <p className="text-sm text-gray-700">Receiver Email: {tribute.receiver?.email || 'Unknown'}</p>
-                        <p className="text-sm text-gray-700">Sender: {tribute.sender ? `${tribute.sender.firstName} ${tribute.sender.lastName}` : 'Unknown'}</p>
-                        <p className="text-sm text-gray-700">Sender Email: {tribute.sender?.email || 'Unknown'}</p>
-                        <p className="text-sm text-gray-700">Amount: ${tribute.amount}</p>
-                        <p className="text-sm text-gray-700">Transaction Id: {tribute.transactionId}</p>
-                        <p className="text-sm text-gray-500">Created At: {new Date(tribute.createdAt).toLocaleDateString('en-US', { 
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}</p>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteTribute(tribute._id)}
-                        className="bg-red-500 text-white px-4 py-2 mt-2 md:mt-0 rounded-md font-medium hover:bg-red-600 transition-colors"
-                      >
-                        Delete record
-                      </button>
-                    </div>
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-6 py-3 text-left">Sender</th>
+                      <th className="px-6 py-3 text-left">Receiver</th>
+                      <th className="px-6 py-3 text-left">Amount</th>
+                      <th className="px-6 py-3 text-left">Date</th>
+                      <th className="px-6 py-3 text-left">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tributes.map((tribute) => (
+                      <tr key={tribute._id} className="border-b hover:bg-gray-50">
+                        <td className="px-6 py-4">{tribute.sender?.firstName} {tribute.sender?.lastName}</td>
+                        <td className="px-6 py-4">{tribute.receiver?.firstName} {tribute.receiver?.lastName}</td>
+                        <td className="px-6 py-4">${tribute.amount}</td>
+                        <td className="px-6 py-4">{new Date(tribute.createdAt).toLocaleDateString()}</td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => handleDeleteTribute(tribute._id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+              {totalTributePages > 1 && (
+                <div className="mt-6 flex justify-center">
+                  <nav className="flex items-center justify-center space-x-4">
+                    <button
+                      onClick={() => handleTributePageChange(tributePage - 1)}
+                      disabled={tributePage === 1}
+                      className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Previous</span>
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <span className="px-4 py-2">
+                      Page {tributePage} of {totalTributePages}
+                    </span>
+                    <button
+                      onClick={() => handleTributePageChange(tributePage + 1)}
+                      disabled={tributePage === totalTributePages}
+                      className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Next</span>
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </nav>
+                </div>
+              )}
             </div>
           </div>
         </div>
