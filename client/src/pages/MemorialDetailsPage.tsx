@@ -90,9 +90,11 @@ export default function MemorialDetailsPage() {
     const [additionalMediaPreviews, setAdditionalMediaPreviews] = useState<string[]>([]);
     const user = localStorage.getItem('user');
     let loggedUserId = '';
+    const [loggedUserRole, setLoggedUserRole] = useState<string | null>(null);
 
     if (user) {
         const parsedUser = JSON.parse(user);
+        setLoggedUserRole(parsedUser.role);
 
         if (parsedUser.id) {
             loggedUserId = parsedUser.id;
@@ -1300,7 +1302,7 @@ export default function MemorialDetailsPage() {
             </div> */}
                     </div>
                     {/* Edit and Delete Buttons */}
-                    {memorial.createdBy === loggedUserId && (
+                    {loggedUserId && (memorial.createdBy === loggedUserId || loggedUserRole === 'admin') && (
                         <div className="absolute top-4 right-4 flex space-x-2">
 
                             {isEditing ? (
