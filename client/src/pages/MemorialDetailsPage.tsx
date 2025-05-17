@@ -66,6 +66,11 @@ interface MemorialDetails {
     totalTributes?: any;
 }
 
+interface StoredUser {
+    id: string;
+    role?: string; 
+}
+
 export default function MemorialDetailsPage() {
     const [memorial, setMemorial] = useState<MemorialDetails | null>(null);
     const [activeTab, setActiveTab] = useState<'about' | 'family' | 'career' | 'gallery'>('about');
@@ -88,22 +93,41 @@ export default function MemorialDetailsPage() {
     const [editedMemorial, setEditedMemorial] = useState<MemorialDetails | null>(null);
     const [mainPicturePreview, setMainPicturePreview] = useState<string | null>(null);
     const [additionalMediaPreviews, setAdditionalMediaPreviews] = useState<string[]>([]);
-    const user = localStorage.getItem('user');
-    let loggedUserId = '';
+    const [loggedUserId, setLoggedUserId] = useState<string | null>(null);
     const [loggedUserRole, setLoggedUserRole] = useState<string | null>(null);
 
-    if (user) {
-        const parsedUser = JSON.parse(user);
-        setLoggedUserRole(parsedUser.role);
-
-        if (parsedUser.id) {
-            loggedUserId = parsedUser.id;
+    // Effect to load user info from localStorage on component mount
+    useEffect(() => {
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            try {
+                const parsedUser: StoredUser = JSON.parse(userString);
+                if (parsedUser) {
+                    if (parsedUser.id) {
+                        setLoggedUserId(parsedUser.id);
+                    } else {
+                        console.error("User id not found in parsed local storage user object.");
+                    }
+                    if (parsedUser.role) {
+                        setLoggedUserRole(parsedUser.role);
+                        console.log("Logged in user role:", parsedUser.role);
+                    } else {
+                        console.warn("User role not found in local storage user object.");
+                    }
+                } else {
+                    console.error("Parsed user object is null or undefined from localStorage.");
+                }
+            } catch (e) {
+                console.error("Failed to parse user from local storage:", e);
+                setLoggedUserId(null); // Clear state on error
+                setLoggedUserRole(null);
+            }
         } else {
-            console.error("User id not found in local storage.");
+            console.warn("User not found in local storage.");
+            setLoggedUserId(null); // Clear state if no user
+            setLoggedUserRole(null);
         }
-    } else {
-        console.error("User not found.");
-    }
+    }, []); 
 
     const fetchMemorial = async () => {
         setLoading(true);
