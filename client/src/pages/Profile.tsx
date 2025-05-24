@@ -16,7 +16,11 @@ interface User {
   email: string;
 }
 
-const Profile = () => {
+interface ProfileProps {
+  onDeleteProfile: () => void;
+}
+
+const Profile = ({ onDeleteProfile }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [user, setUser] = useState<User | null>(null);
@@ -62,6 +66,7 @@ const Profile = () => {
                 throw new Error(data.message || 'Failed to delete profile');
             }
             localStorage.removeItem('authToken');
+            onDeleteProfile();
             navigate('/signup');
         } catch (error:any) {
             setError(error.message);
